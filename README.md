@@ -1,7 +1,7 @@
 Logging
 =======
 
-**Logging** is a logging facility written in CoffeeScript based on the famous SLF4J framework known from Java.
+**Logging** is a logging facility written in [CoffeeScript](http://coffeescript.org/) based on the famous [SLF4J framework](http://www.slf4j.org/) known from Java.
 
 Usage
 -----
@@ -32,7 +32,7 @@ Adapters
 --------
 At the moment there is just one adapter for the log message to process: the *ConsoleAdapter*
 
-It uses the console object provided by the *Console API*.
+It uses the console object provided by the [Console API](https://getfirebug.com/wiki/index.php/Console_API).
 
 You can pass any adapter you like into the Log constructor as third argument.
 
