@@ -1,0 +1,26 @@
+{
+  "name": "Logging",
+  "version": "1.0.0",
+  "description": "Logging facility based on SLF4J in Java",
+  "main": "src/Log.coffee",
+  "directories": {
+    "src": "src",
+    "test": "test"
+  },
+  "dependencies": {
+    "should": "1.2.x"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha -u tdd -R spec --compilers coffee:coffee-script test/Log.test.coffee"
+  },
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jceme/Logging.git"
+  },
+  "keywords": [
+    "logging"
+  ],
+  "author": "Daniel",
+  "license": "GPL"
+}
