@@ -26,6 +26,7 @@ module.exports = class Log
 
 
   constructor: (@name, @level = Log.DEFAULT_LEVEL, @adapter = Log.DEFAULT_ADAPTER) ->
+    throw new Error('Log name required') unless name
   
   toString: -> "Log[#{@name} at level #{rev[@level]}]"
   

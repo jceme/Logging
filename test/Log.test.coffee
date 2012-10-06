@@ -30,6 +30,9 @@ suite 'Sole logging', ->
     (new Log "foo").should.be.ok
     (new Log "bar", Log.Level.DEBUG).should.be.ok
     (new Log "bar", Log.Level.DEBUG, {}).should.be.ok
+    (-> new Log()).should.throw()
+    (-> new Log null).should.throw()
+    (-> new Log "").should.throw()
 
 
 suite 'Logging', ->
