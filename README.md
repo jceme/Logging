@@ -44,6 +44,20 @@ Log constructor
 * *adapter* Optionally use adapter for this logger instead of *Log.DEFAULT_ADAPTER* (defaults to *ConsoleAdapter*)
 
 
+Log levels
+----------
+The following log levels exist sorted by level importance (highest first):
+
+* Log.Level.FATAL
+* Log.Level.ERROR
+* Log.Level.WARN
+* Log.Level.INFO
+* Log.Level.DEBUG
+* Log.Level.TRACE
+
+There is also *Log.Level.ALL* which will log for all log levels and *Log.Level.OFF* which completely suppresses logging.
+
+
 Adapters
 --------
 You can pass any adapter you like into the Log constructor as third argument.
