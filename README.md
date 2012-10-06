@@ -24,8 +24,8 @@ log.debug 'This is now {} by {}', 'displayed', log.name           # Output: This
 
 log.debug 'Display arguments in any order: {1} and {0}', 14, 36   # Output: Display arguments in any order: 36 and 14
 
-log.debug -> JSON.stringify foo: 'bar'                            # Function is only executed if logging actually happens, can be used for expensive operations
-                                                                  # Output: bar
+log.debug -> JSON.stringify { foo: 'bar' }                        # Function is only executed if logging actually happens, can be used for expensive operations
+                                                                  # Output: {"foo":"bar"}
 ```
 
 Adapters
