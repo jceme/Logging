@@ -35,12 +35,21 @@ log.debug (done) ->                                               # Asynchronous
 ```
 
 
+Log constructor
+-----------
+`log = new Log(name, [level], [adapter])`
+
+* **name** The required logger name used for the output line
+* *level* Optionally initialize this logger to the given level instead of *Log.DEFAULT_LEVEL* (defaults to *Log.Level.INFO*)
+* *adapter* Optionally use adapter for this logger instead of *Log.DEFAULT_ADAPTER* (defaults to *ConsoleAdapter*)
+
+
 Adapters
 --------
 You can pass any adapter you like into the Log constructor as third argument.
 
 ### ConsoleAdapter
-This default adapter will make use of the [Console API](https://getfirebug.com/wiki/index.php/Console_API) usually available for common environments.
+This **default adapter** will make use of the [Console API](https://getfirebug.com/wiki/index.php/Console_API) usually available for common environments.
 
 It will log the messages to the *console* object supporting its methods for different log levels.
 
@@ -65,15 +74,6 @@ The file open mode, defaults to 0644.
 Usage: `adapter = new TeeAdapter(adapter1, adapter2, ...)`
 
 This is a pseudo adapter which just passes the adapter calls to all adapters given in the constructor.
-
-
-Log constructor
------------
-`log = new Log(name, [level], [adapter])`
-
-* **name** The logger name used for the output line
-* *level* Optionally initialize this logger to the given level instead of *Log.DEFAULT_LEVEL*
-* *adapter* Optionally use adapter for this logger instead of *Log.DEFAULT_ADAPTER*
 
 
 Using **Logging** in Javascript
