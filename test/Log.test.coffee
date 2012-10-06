@@ -13,6 +13,7 @@ class AdapterMock
     delete @lastMessage
 
 Log = require '../src/Log.coffee'
+TeeAdapter = require '../src/adapters/TeeAdapter.coffee'
 should = require 'should'
 
 
@@ -208,3 +209,20 @@ suite 'Logging', ->
         done()
       , 20
     should.not.exist mock.lastMessage
+
+
+  test 'Tee test setup', ->
+    mock1 = new AdapterMock()
+    mock2 = new AdapterMock()
+    
+    adapter = new TeeAdapter(mock1, new TeeAdapter(mock2))
+    
+    log = new Log "testlogger", Log.Level.DEBUG, adapter
+    
+    should.not.exist mock1.lastMessage
+    should.not.exist mock2.lastMessage
+    
+    log.info 'Count of mocks: {}', 2
+    
+    mock1.assert 'info', '[INFO] testlogger: Count of mocks: 2'
+    mock2.assert 'info', '[INFO] testlogger: Count of mocks: 2'
