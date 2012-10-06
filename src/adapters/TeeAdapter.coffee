@@ -1,5 +1,7 @@
 module.exports = class TeeAdapter
 
+  'use strict'
+
   constructor: (@adapters...) ->
     
   # Create prototype delegates to adapters methods
