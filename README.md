@@ -35,6 +35,35 @@ log.debug (done) ->                                               # Asynchronous
 ```
 
 
+Configuration
+-------------
+```json
+{
+	"adapters": [
+		{
+			"type": "ConsoleAdapter",
+			"min":  "DEBUG",
+			"max":  "WARN"
+		},
+		{
+			"type": "FileAdapter",
+			"min":  "WARN",
+			"file": "error.log",
+			"opts": {
+				"overwrite": true
+			}
+		}
+	],
+	
+	"levels": {
+		"": "INFO",
+		"org.foo": "WARN",
+		"my.app": "ALL"
+	}
+}
+```
+
+
 Log constructor
 -----------
 `log = new Log(name, [level], [adapter])`

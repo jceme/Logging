@@ -20,6 +20,8 @@ module.exports = class FileAdapter
   constructor: (filename, opts = {}) ->
     @fd = if opts.nocache then openFile(filename, opts) else cachedFile(filename, opts)
   
+  toString: -> 'FileAdapter'
+  
   close: -> try fs.closeSync @fd
     
   # Create prototype methods

@@ -12,8 +12,8 @@ class AdapterMock
     delete @lastLevel
     delete @lastMessage
 
-Log = require '../src/Log.coffee'
-TeeAdapter = require '../src/adapters/TeeAdapter.coffee'
+Log = require '../Log'
+TeeAdapter = require '../adapters/TeeAdapter'
 should = require 'should'
 
 
