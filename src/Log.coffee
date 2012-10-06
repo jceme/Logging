@@ -16,13 +16,19 @@ module.exports = class Log
     TRACE: 6
     ALL: 100
     
-  @DEFAULT_LEVEL = @Level.INFO
+  @DEFAULT_LEVEL = null
   
-  @DEFAULT_ADAPTER = new ConsoleAdapter()
+  @DEFAULT_ADAPTER = null
   
   @LOGFILE_NAME = 'logconf.json'
   
   levels = null
+  
+  reset = ->
+    Log.DEFAULT_LEVEL = Log.Level.INFO
+    Log.DEFAULT_ADAPTER = new ConsoleAdapter()
+    levels = {}
+    
 
   rev = {}
   lcrev = {}
@@ -38,12 +44,13 @@ module.exports = class Log
   initLogging = (json) ->
     json = JSON.parse json if typeof json is 'string'
     adapters = json.adapters ? json.adapter or []
+
+    reset()
     
     if adapters.length
       Log.DEFAULT_ADAPTER = if adapters.length is 1 then createAdapter adapters[0] else
         new TeeAdapter(( createAdapter adapter for adapter in adapters ))
     
-    levels = {}
     for name, lvl of json.levels ? json.level or {}
       if (lvl = getLevel lvl)?
         if name then levels[name] = lvl else Log.DEFAULT_LEVEL = lvl
@@ -57,8 +64,8 @@ module.exports = class Log
     min = getLevel conf.min ? conf.minLevel ? conf.minlevel ? conf.minimumLevel, Log.Level.ALL
     max = getLevel conf.max ? conf.maxLevel ? conf.maxlevel ? conf.maximumLevel, Log.Level.OFF
     
-    adapter.minLevel = Math.min min, max
-    adapter.maxLevel = Math.max min, max
+    adapter.minLevel = Math.max min, max
+    adapter.maxLevel = Math.min min, max
     
     adapter
   
@@ -97,9 +104,20 @@ module.exports = class Log
     return
   
   @init()
+  
+  
+  # Find the log name prefix (dot-separated) in the configured levels
+  findLogLevel = (name) ->
+    return levels[name] if name of levels
+    
+    i = name.length
+    while --i > 0 then if name[i] is '.'
+      return levels[n] if (n = name.substr 0, i) of levels
+    
+    return Log.DEFAULT_LEVEL
 
 
-  constructor: (@name, @level = Log.DEFAULT_LEVEL, @adapter = Log.DEFAULT_ADAPTER) ->
+  constructor: (@name, @level = findLogLevel(name), @adapter = Log.DEFAULT_ADAPTER) ->
     throw new Error('Log name required') unless name
   
   toString: -> "Log[#{@name} at level #{rev[@level]}]"

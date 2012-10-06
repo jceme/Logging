@@ -5,7 +5,7 @@
   module.exports = Log = (function() {
     'use strict';
 
-    var ConsoleAdapter, FileAdapter, TeeAdapter, createAdapter, getLevel, initLogging, key, lcrev, levels, log, rev, shift, val, _ref;
+    var ConsoleAdapter, FileAdapter, TeeAdapter, createAdapter, findLogLevel, getLevel, initLogging, key, lcrev, levels, log, reset, rev, shift, val, _ref;
 
     ConsoleAdapter = require('./adapters/ConsoleAdapter');
 
@@ -24,13 +24,19 @@
       ALL: 100
     };
 
-    Log.DEFAULT_LEVEL = Log.Level.INFO;
+    Log.DEFAULT_LEVEL = null;
 
-    Log.DEFAULT_ADAPTER = new ConsoleAdapter();
+    Log.DEFAULT_ADAPTER = null;
 
     Log.LOGFILE_NAME = 'logconf.json';
 
     levels = null;
+
+    reset = function() {
+      Log.DEFAULT_LEVEL = Log.Level.INFO;
+      Log.DEFAULT_ADAPTER = new ConsoleAdapter();
+      return levels = {};
+    };
 
     rev = {};
 
@@ -62,6 +68,7 @@
         json = JSON.parse(json);
       }
       adapters = ((_ref1 = json.adapters) != null ? _ref1 : json.adapter) || [];
+      reset();
       if (adapters.length) {
         Log.DEFAULT_ADAPTER = adapters.length === 1 ? createAdapter(adapters[0]) : new TeeAdapter((function() {
           var _i, _len, _results;
@@ -73,7 +80,6 @@
           return _results;
         })());
       }
-      levels = {};
       _ref3 = ((_ref2 = json.levels) != null ? _ref2 : json.level) || {};
       for (name in _ref3) {
         lvl = _ref3[name];
@@ -100,8 +106,8 @@
       })();
       min = getLevel((_ref1 = (_ref2 = (_ref3 = conf.min) != null ? _ref3 : conf.minLevel) != null ? _ref2 : conf.minlevel) != null ? _ref1 : conf.minimumLevel, Log.Level.ALL);
       max = getLevel((_ref4 = (_ref5 = (_ref6 = conf.max) != null ? _ref6 : conf.maxLevel) != null ? _ref5 : conf.maxlevel) != null ? _ref4 : conf.maximumLevel, Log.Level.OFF);
-      adapter.minLevel = Math.min(min, max);
-      adapter.maxLevel = Math.max(min, max);
+      adapter.minLevel = Math.max(min, max);
+      adapter.maxLevel = Math.min(min, max);
       return adapter;
     };
 
@@ -141,9 +147,25 @@
 
     Log.init();
 
+    findLogLevel = function(name) {
+      var i, n;
+      if (name in levels) {
+        return levels[name];
+      }
+      i = name.length;
+      while (--i > 0) {
+        if (name[i] === '.') {
+          if ((n = name.substr(0, i)) in levels) {
+            return levels[n];
+          }
+        }
+      }
+      return Log.DEFAULT_LEVEL;
+    };
+
     function Log(name, level, adapter) {
       this.name = name;
-      this.level = level != null ? level : Log.DEFAULT_LEVEL;
+      this.level = level != null ? level : findLogLevel(name);
       this.adapter = adapter != null ? adapter : Log.DEFAULT_ADAPTER;
       if (!name) {
         throw new Error('Log name required');
