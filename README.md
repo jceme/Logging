@@ -3,6 +3,7 @@ Logging
 
 **Logging** is a logging facility written in [CoffeeScript](http://coffeescript.org/) based on the famous [SLF4J framework](http://www.slf4j.org/) known from Java.
 
+
 Usage
 -----
 
@@ -33,23 +34,50 @@ log.debug (done) ->                                               # Asynchronous
     , 2000
 ```
 
+
 Adapters
 --------
-At the moment there is just one adapter for the log message to process: the *ConsoleAdapter*
-
-It uses the console object provided by the [Console API](https://getfirebug.com/wiki/index.php/Console_API).
-
 You can pass any adapter you like into the Log constructor as third argument.
 
-Constructor
+### ConsoleAdapter
+This default adapter will make use of the [Console API](https://getfirebug.com/wiki/index.php/Console_API) usually available for common environments.
+
+It will log the messages to the *console* object supporting its methods for different log levels.
+
+### FileAdapter
+A FileAdapter is created by `new FileAdapter(filepath, options)`.
+
+The optional *options* are:
+* **nocache**  
+The default behavior is to open a file once to avoid write concurrency.
+This options disables this behavior.
+
+* **overwrite**  
+Instead of appending to a file, overwrite it on opening.
+
+* **openFlags**  
+For more file opening control you can pass the exact open flags with this option.
+
+* **mode**  
+The file open mode, defaults to 0644.
+
+### TeeAdapter
+Usage: `adapter = new TeeAdapter(adapter1, adapter2, ...)`
+
+This is a pseudo adapter which just passes the adapter calls to all adapters given in the constructor.
+
+
+Log constructor
 -----------
-log = new Log(**name**, [*level*], [*adapter*])
+`log = new Log(name, [level], [adapter])`
+
+* **name** The logger name used for the output line
+* *level* Optionally initialize this logger to the given level instead of *Log.DEFAULT_LEVEL*
+* *adapter* Optionally use adapter for this logger instead of *Log.DEFAULT_ADAPTER*
+
 
 Using **Logging** in Javascript
 -------------------------------
-You can compile the CoffeeScript into Javascript by installing the [CoffeeScript compiler](http://coffeescript.org/) and executing:
-```bash
-coffee --compile --output js src/
-```
+You can compile the CoffeeScript into Javascript by installing the [CoffeeScript compiler](http://coffeescript.org/) and executing `coffee --compile --output js src/`
 
 After that you can use **Logging** just like any other Javascript CommonJS module with the methods shown above.
