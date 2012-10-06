@@ -48,9 +48,6 @@ module.exports = class Log
         else args[if idx is '' then i++ else parseInt idx]
     
     # Execute logging function with done callback
-    try
-      func (msg) => @adapter[lcrev[level]] "[#{rev[level]}] #{@name}: #{msg}"
-    catch e
-      @adapter.error "[Log Error] #{e.stack ? e}"
+    func (msg) => @adapter[lcrev[level]] "[#{rev[level]}] #{@name}: #{msg}"
     
     return
