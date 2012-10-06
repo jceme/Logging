@@ -8,9 +8,10 @@
     "test": "test"
   },
   "dependencies": {
+  },
+  "devDependencies": {
     "should": "1.2.x"
   },
-  "devDependencies": {},
   "scripts": {
     "test": "mocha -u tdd -R spec --compilers coffee:coffee-script test/Log.test.coffee"
   },

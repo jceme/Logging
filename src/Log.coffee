@@ -34,13 +34,20 @@ module.exports = class Log
   
   log = (level, args) -> if level <= @level
     msg = shift.call args
-    msg = msg.apply null, args if typeof msg is "function"
-    i = 0
     
-    msg = "#{msg}".replace /\{(?:(\d*)| (.*?))\}/g, (_, idx, str) ->
-      unless idx? then str
-      else args[if idx is '' then i++ else parseInt idx]
+    func = if typeof msg is "function"
+      # Have function, if it is not asynchronous then transform it into one
+      if msg.length > 0 then msg else (done) -> done msg()
+      
+    else (done) ->
+      # Format message with the arguments
+      i = 0
+      
+      done "#{msg}".replace /\{(?:(\d*)| (.*?))\}/g, (_, idx, str) ->
+        unless idx? then str
+        else args[if idx is '' then i++ else parseInt idx]
     
-    @adapter[lcrev[level]] "[#{rev[level]}] #{@name}: #{msg}"
+    # Execute logging function with done callback
+    func (msg) => @adapter[lcrev[level]] "[#{rev[level]}] #{@name}: #{msg}"
     
     return

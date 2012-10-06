@@ -26,6 +26,11 @@ log.debug 'Display arguments in any order: {1} and {0}', 14, 36   # Output: Disp
 
 log.debug -> JSON.stringify { foo: 'bar' }                        # Function is only executed if logging actually happens, can be used for expensive operations
                                                                   # Output: {"foo":"bar"}
+
+log.debug (done) ->                                               # Asynchronous logging after two seconds
+    setTimeout ->                                                 # Output: {"abc":"xyz"}
+        done(JSON.stringify { abc: 'xyz' })
+    , 2000
 ```
 
 Adapters

@@ -185,19 +185,26 @@ suite 'Logging', ->
     mock.assert 'info', '[INFO] testlogger: My 42 param with bar last and true next'
     
     mock.reset()
-    log.error (a, b, c) ->
-      a.should.be.equal 4
-      b.should.be.equal 6
-      c.should.be.equal 3
-      a + b * c
-    , 4, 6, 3
-    mock.assert 'error', '[ERROR] testlogger: 22'
+    log.error -> JSON.stringify { foo: "bar" }
+    mock.assert 'error', '[ERROR] testlogger: {"foo":"bar"}'
     
     mock.reset()
     executed = no
-    log.trace (a, b, c) ->
+    log.trace ->
       executed = yes
       'foo'
-    , 4, 6, 3
     should.not.exist mock.lastMessage
     executed.should.be.false
+  
+  
+  test 'Asynchronous log messages', (done) ->
+    log = new Log "testlogger", Log.Level.DEBUG, mock
+    
+    mock.reset()
+    log.debug (innerdone) ->
+      setTimeout ->
+        innerdone 'Async log message'
+        mock.assert 'debug', '[DEBUG] testlogger: Async log message'
+        done()
+      , 20
+    should.not.exist mock.lastMessage
