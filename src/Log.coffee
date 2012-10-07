@@ -36,8 +36,6 @@ module.exports = class Log
   initLogging = (json) ->
     json = JSON.parse json if typeof json is 'string'
     adapters = json.adapters ? json.adapter or []
-
-    reset()
     
     if adapters.length
       Log.DEFAULT_ADAPTER = if adapters.length is 1 then createAdapter adapters[0] else
@@ -63,6 +61,8 @@ module.exports = class Log
     try
       fs = require 'fs'
       path = require 'path'
+
+      reset()
       
       unless file?
         # Look for LOGFILE_NAME in this and parent directories

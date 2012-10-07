@@ -58,7 +58,6 @@
         json = JSON.parse(json);
       }
       adapters = ((_ref1 = json.adapters) != null ? _ref1 : json.adapter) || [];
-      reset();
       if (adapters.length) {
         Log.DEFAULT_ADAPTER = adapters.length === 1 ? createAdapter(adapters[0]) : new TeeAdapter((function() {
           var _i, _len, _results;
@@ -108,6 +107,7 @@
       try {
         fs = require('fs');
         path = require('path');
+        reset();
         if (file == null) {
           dir = '.';
           last = null;
