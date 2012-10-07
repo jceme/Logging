@@ -37,6 +37,12 @@ log.debug (done) ->                                               # Asynchronous
 
 Configuration
 -------------
+The auto-configuration looks for a file named **logconf.json** in the current or parent directories.
+
+You can pass a custom file name or JSON config object to the *Log.init()* method **before** Log instances are created.
+
+The JSON configuration has the following structure (all entries are optional):
+
 ```json
 {
 	"adapters": [
@@ -48,6 +54,7 @@ Configuration
 		{
 			"type": "FileAdapter",
 			"min":  "WARN",
+			"max":  "FATAL",
 			"file": "error.log",
 			"opts": {
 				"overwrite": true
@@ -58,7 +65,8 @@ Configuration
 	"levels": {
 		"": "INFO",
 		"org.foo": "WARN",
-		"my.app": "ALL"
+		"my.app": "ALL",
+		"my.app.sub-module": "INFO"
 	}
 }
 ```
