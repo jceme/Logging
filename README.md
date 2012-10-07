@@ -71,6 +71,8 @@ The JSON configuration has the following structure (all entries are optional):
 }
 ```
 
+With *levels[""]* you can set the default log level for all logs as fall-back.
+
 
 Log constructor
 -----------
