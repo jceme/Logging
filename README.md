@@ -6,33 +6,73 @@ Logging
 
 Usage
 -----
+Example usage in **CoffeeScript** (Javascript usage is similar):
 
 ```coffeescript
-Log = require 'Log'
+Log = require('Log')
 
 # Create new Log instance with the name my-log-name and default log level INFO
-log = new Log 'my-log-name'
+log = new Log('my-log-name')
 
 # Ordinary logging
-log.info 'First log message'
+log.info('First log message')
 
-log.debug 'Not displayed due to lower log level'
+log.debug('Not displayed due to lower log level')
 
 # Output all levels
 log.level = Log.Level.ALL
 
-log.debug 'This is now {} by {}', 'displayed', log.name           # Output: This is now displayed by my-log-name
+log.debug('This is now {} by {}', 'displayed', log.name)           # Output: This is now displayed by my-log-name
 
-log.debug 'Display arguments in any order: {1} and {0}', 14, 36   # Output: Display arguments in any order: 36 and 14
+log.debug('Display arguments in any order: {1} and {0}', 14, 36)   # Output: Display arguments in any order: 36 and 14
 
-log.debug -> JSON.stringify { foo: 'bar' }                        # Function is only executed if logging actually happens, can be used for expensive operations
-                                                                  # Output: {"foo":"bar"}
+log.debug(-> JSON.stringify { foo: 'bar' })                        # Function is only executed if logging actually happens, can be used for expensive operations
+                                                                   # Output: {"foo":"bar"}
 
-log.debug (done) ->                                               # Asynchronous logging after two seconds
-    setTimeout ->                                                 # Output: {"abc":"xyz"}
+log.debug (done) ->                                                # Asynchronous logging after two seconds
+    setTimeout ->                                                  # Output: {"abc":"xyz"}
         done(JSON.stringify { abc: 'xyz' })
     , 2000
 ```
+
+
+Configuration
+-------------
+The auto-configuration looks for a file named **logconf.json** in the current or parent directories.
+
+You can pass a custom file name or JSON config object to the *Log.init()* method **before** Log instances are created.
+
+The JSON configuration has the following structure (all entries are optional):
+
+```json
+{
+	"adapters": [
+		{
+			"type": "ConsoleAdapter",
+			"min":  "DEBUG",
+			"max":  "WARN"
+		},
+		{
+			"type": "FileAdapter",
+			"min":  "WARN",
+			"max":  "FATAL",
+			"file": "error.log",
+			"opts": {
+				"overwrite": true
+			}
+		}
+	],
+	
+	"levels": {
+		"": "INFO",
+		"org.foo": "WARN",
+		"my.app": "ALL",
+		"my.app.sub-module": "INFO"
+	}
+}
+```
+
+With *levels[""]* you can set the default log level for all logs as fall-back.
 
 
 Log constructor
@@ -88,10 +128,3 @@ The file open mode, defaults to 0644.
 Usage: `adapter = new TeeAdapter(adapter1, adapter2, ...)`
 
 This is a pseudo adapter which just passes the adapter calls to all adapters given in the constructor.
-
-
-Using **Logging** in Javascript
--------------------------------
-You can compile the CoffeeScript into Javascript by installing the [CoffeeScript compiler](http://coffeescript.org/) and executing `coffee --compile --output js src/`
-
-After that you can use **Logging** just like any other Javascript CommonJS module with the methods shown above.

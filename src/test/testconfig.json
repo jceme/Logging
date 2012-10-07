@@ -1,0 +1,18 @@
+{
+	"adapters": [
+		{
+			"type": "ConsoleAdapter",
+			"min":  "ERROR"
+		},
+		{
+			"type": "ConsoleAdapter",
+			"min":  "DEBUG",
+			"max":  "INFO"
+		}
+	],
+	"levels": {
+		"": "DEBUG",
+		"my.logger": "ERROR",
+		"my.logger.other": "ALL"
+	}
+}

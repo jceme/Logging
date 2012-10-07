@@ -1,6 +1,6 @@
-class AdapterMock
+class AdapterMock extends require('../adapters/Adapter')
   "fatal error warn info debug trace".split(' ').forEach (key) ->
-    AdapterMock::[key] = (msg) ->
+    AdapterMock::["_#{key}"] = (msg) ->
       @lastLevel = key
       @lastMessage = msg
   
@@ -12,8 +12,10 @@ class AdapterMock
     delete @lastLevel
     delete @lastMessage
 
-Log = require '../src/Log.coffee'
-TeeAdapter = require '../src/adapters/TeeAdapter.coffee'
+Log = require '../Log'
+ConsoleAdapter = require '../adapters/ConsoleAdapter'
+FileAdapter = require '../adapters/FileAdapter'
+TeeAdapter = require '../adapters/TeeAdapter'
 should = require 'should'
 
 
@@ -229,3 +231,79 @@ suite 'Logging', ->
     
     mock1.assert 'info', '[INFO] testlogger: Count of mocks: 2'
     mock2.assert 'info', '[INFO] testlogger: Count of mocks: 2'
+
+
+suite 'Logging init', ->
+  
+  test 'Init without args', ->
+    Log.init()
+    Log.DEFAULT_LEVEL.should.equal Log.Level.INFO
+    Log.DEFAULT_ADAPTER.should.be.an.instanceOf ConsoleAdapter
+  
+  
+  test 'Init from file', ->
+    Log.init 'src/test/testconfig.json'
+    Log.DEFAULT_LEVEL.should.equal Log.Level.DEBUG
+    Log.DEFAULT_ADAPTER.should.be.an.instanceOf TeeAdapter
+    Log.DEFAULT_ADAPTER.adapters.length.should.equal 2
+    Log.DEFAULT_ADAPTER.adapters[0].should.be.an.instanceOf ConsoleAdapter
+    Log.DEFAULT_ADAPTER.adapters[0].minLevel.should.equal Log.Level.ERROR
+    Log.DEFAULT_ADAPTER.adapters[0].maxLevel.should.equal Log.Level.OFF
+    Log.DEFAULT_ADAPTER.adapters[1].should.be.an.instanceOf ConsoleAdapter
+    Log.DEFAULT_ADAPTER.adapters[1].minLevel.should.equal Log.Level.DEBUG
+    Log.DEFAULT_ADAPTER.adapters[1].maxLevel.should.equal Log.Level.INFO
+    
+    Log.init {}
+    Log.DEFAULT_LEVEL.should.equal Log.Level.INFO
+    Log.DEFAULT_ADAPTER.should.be.an.instanceOf ConsoleAdapter
+  
+  
+  test 'Init from object', ->
+    Log.init
+      adapters: [
+        {
+          type: "ConsoleAdapter"
+        }
+        {
+          type: "ConsoleAdapter"
+          max:  "WARN"
+        }
+      ]
+    Log.DEFAULT_ADAPTER.should.be.an.instanceOf TeeAdapter
+    Log.DEFAULT_ADAPTER.adapters.length.should.equal 2
+    Log.DEFAULT_ADAPTER.adapters[0].should.be.an.instanceOf ConsoleAdapter
+    Log.DEFAULT_ADAPTER.adapters[0].minLevel.should.equal Log.Level.ALL
+    Log.DEFAULT_ADAPTER.adapters[0].maxLevel.should.equal Log.Level.OFF
+    Log.DEFAULT_ADAPTER.adapters[1].should.be.an.instanceOf ConsoleAdapter
+    Log.DEFAULT_ADAPTER.adapters[1].minLevel.should.equal Log.Level.ALL
+    Log.DEFAULT_ADAPTER.adapters[1].maxLevel.should.equal Log.Level.WARN
+    
+    Log.init {}
+    Log.DEFAULT_LEVEL.should.equal Log.Level.INFO
+    Log.DEFAULT_ADAPTER.should.be.an.instanceOf ConsoleAdapter
+  
+  
+  test 'Test configured log levels', ->
+    Log.init
+      levels:
+        "": "debug"
+        "foo": "warn"
+        "foo.bar": "info"
+    
+    tst = (name, method, logged) ->
+      mock = new AdapterMock()
+      log = new Log name, null, mock
+      log[method] 'msg'
+      if logged then mock.lastLevel.should.equal method
+      else should.not.exist mock.lastLevel
+    
+    tst 'gar', 'debug', yes
+    tst 'gar', 'trace', no
+    tst 'foo', 'debug', no
+    tst 'foo', 'warn', yes
+    tst 'fool', 'debug', yes
+    tst 'foo-bar', 'debug', yes
+    tst 'foo.test', 'debug', no
+    tst 'foo.test', 'warn', yes
+    tst 'foo.bar', 'debug', no
+    tst 'foo.bar', 'info', yes
