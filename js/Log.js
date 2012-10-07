@@ -13,16 +13,7 @@
 
     TeeAdapter = require('./adapters/TeeAdapter');
 
-    Log.Level = {
-      OFF: 0,
-      FATAL: 1,
-      ERROR: 2,
-      WARN: 3,
-      INFO: 4,
-      DEBUG: 5,
-      TRACE: 6,
-      ALL: 100
-    };
+    Log.Level = require('./LogLevel');
 
     Log.DEFAULT_LEVEL = null;
 
@@ -57,9 +48,8 @@
       }
     }
 
-    getLevel = function(levelname, deflevel) {
-      var _ref1;
-      return (_ref1 = Log.Level[(levelname || '').toUpperCase()]) != null ? _ref1 : deflevel;
+    getLevel = function(levelname) {
+      return Log.Level[(levelname || '').toUpperCase()];
     };
 
     initLogging = function(json) {
@@ -94,7 +84,7 @@
     };
 
     createAdapter = function(conf) {
-      var adapter, max, min, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
+      var adapter, n, _ref1, _ref2, _ref3, _ref4, _ref5, _ref6;
       adapter = (function() {
         var _ref1;
         switch (conf != null ? conf.type : void 0) {
@@ -104,10 +94,12 @@
             return new ConsoleAdapter();
         }
       })();
-      min = getLevel((_ref1 = (_ref2 = (_ref3 = conf.min) != null ? _ref3 : conf.minLevel) != null ? _ref2 : conf.minlevel) != null ? _ref1 : conf.minimumLevel, Log.Level.ALL);
-      max = getLevel((_ref4 = (_ref5 = (_ref6 = conf.max) != null ? _ref6 : conf.maxLevel) != null ? _ref5 : conf.maxlevel) != null ? _ref4 : conf.maximumLevel, Log.Level.OFF);
-      adapter.minLevel = Math.max(min, max);
-      adapter.maxLevel = Math.min(min, max);
+      if ((n = getLevel((_ref1 = (_ref2 = (_ref3 = conf.min) != null ? _ref3 : conf.minLevel) != null ? _ref2 : conf.minlevel) != null ? _ref1 : conf.minimumLevel)) != null) {
+        adapter.minLevel = n;
+      }
+      if ((n = getLevel((_ref4 = (_ref5 = (_ref6 = conf.max) != null ? _ref6 : conf.maxLevel) != null ? _ref5 : conf.maxlevel) != null ? _ref4 : conf.maximumLevel)) != null) {
+        adapter.maxLevel = n;
+      }
       return adapter;
     };
 

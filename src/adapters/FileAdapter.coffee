@@ -1,4 +1,4 @@
-module.exports = class FileAdapter
+module.exports = class FileAdapter extends require('./Adapter')
 
   'use strict'
   
@@ -18,6 +18,7 @@ module.exports = class FileAdapter
   
   
   constructor: (filename, opts = {}) ->
+    super
     @fd = if opts.nocache then openFile(filename, opts) else cachedFile(filename, opts)
   
   toString: -> 'FileAdapter'
@@ -26,6 +27,6 @@ module.exports = class FileAdapter
     
   # Create prototype methods
   for name in 'fatal error warn info debug trace'.split(' ') then do (name) ->
-    FileAdapter::[name] = (msg) ->
+    FileAdapter::["_#{name}"] = (msg) ->
       msg = msg.replace "\n", "\n    "
       fs.writeSync @fd, "#{msg}\n"

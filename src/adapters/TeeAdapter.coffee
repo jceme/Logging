@@ -1,8 +1,9 @@
-module.exports = class TeeAdapter
+module.exports = class TeeAdapter extends require('./Adapter')
 
   'use strict'
 
   constructor: (@adapters...) ->
+    super
     @adapters = adapters[0] if arguments.length is 1 and adapters[0] instanceof Array
   
   toString: -> 'TeeAdapter'

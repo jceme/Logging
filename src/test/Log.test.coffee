@@ -1,6 +1,6 @@
-class AdapterMock
+class AdapterMock extends require('../adapters/Adapter')
   "fatal error warn info debug trace".split(' ').forEach (key) ->
-    AdapterMock::[key] = (msg) ->
+    AdapterMock::["_#{key}"] = (msg) ->
       @lastLevel = key
       @lastMessage = msg
   

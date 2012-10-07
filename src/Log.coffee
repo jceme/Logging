@@ -6,15 +6,7 @@ module.exports = class Log
   FileAdapter = require './adapters/FileAdapter'
   TeeAdapter = require './adapters/TeeAdapter'
   
-  @Level =
-    OFF: 0
-    FATAL: 1
-    ERROR: 2
-    WARN: 3
-    INFO: 4
-    DEBUG: 5
-    TRACE: 6
-    ALL: 100
+  @Level = require './LogLevel'
     
   @DEFAULT_LEVEL = null
   
@@ -39,7 +31,7 @@ module.exports = class Log
     Log::[lckey] = -> log.call @, Log.Level[key], arguments
   
   
-  getLevel = (levelname, deflevel) -> Log.Level[(levelname or '').toUpperCase()] ? deflevel
+  getLevel = (levelname) -> Log.Level[(levelname or '').toUpperCase()]
   
   initLogging = (json) ->
     json = JSON.parse json if typeof json is 'string'
@@ -61,11 +53,8 @@ module.exports = class Log
       when 'FileAdapter' then new FileAdapter(conf.file ? conf.filename or 'logging.log', conf.opts)
       else new ConsoleAdapter()
     
-    min = getLevel conf.min ? conf.minLevel ? conf.minlevel ? conf.minimumLevel, Log.Level.ALL
-    max = getLevel conf.max ? conf.maxLevel ? conf.maxlevel ? conf.maximumLevel, Log.Level.OFF
-    
-    adapter.minLevel = Math.max min, max
-    adapter.maxLevel = Math.min min, max
+    adapter.minLevel = n if (n = getLevel conf.min ? conf.minLevel ? conf.minlevel ? conf.minimumLevel)?
+    adapter.maxLevel = n if (n = getLevel conf.max ? conf.maxLevel ? conf.maxlevel ? conf.maximumLevel)?
     
     adapter
   
