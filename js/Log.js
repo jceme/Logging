@@ -5,7 +5,9 @@
   module.exports = Log = (function() {
     'use strict';
 
-    var ConsoleAdapter, FileAdapter, TeeAdapter, createAdapter, findLogLevel, getLevel, initLogging, key, lcrev, levels, log, reset, rev, shift, val, _ref;
+    var ConsoleAdapter, FileAdapter, JsonParser, TeeAdapter, createAdapter, findLogLevel, getLevel, initLogging, key, lcrev, levels, log, reset, rev, shift, val, _ref;
+
+    JsonParser = require('RelaxedJsonParser');
 
     ConsoleAdapter = require('./adapters/ConsoleAdapter');
 
@@ -55,7 +57,7 @@
     initLogging = function(json) {
       var adapter, adapters, lvl, name, _ref1, _ref2, _ref3;
       if (typeof json === 'string') {
-        json = JSON.parse(json);
+        json = JsonParser.parse(json);
       }
       adapters = ((_ref1 = json.adapters) != null ? _ref1 : json.adapter) || [];
       if (adapters.length) {

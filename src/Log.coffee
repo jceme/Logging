@@ -2,6 +2,7 @@ module.exports = class Log
 
   'use strict'
 
+  JsonParser = require 'RelaxedJsonParser'
   ConsoleAdapter = require './adapters/ConsoleAdapter'
   FileAdapter = require './adapters/FileAdapter'
   TeeAdapter = require './adapters/TeeAdapter'
@@ -34,7 +35,7 @@ module.exports = class Log
   getLevel = (levelname) -> Log.Level[(levelname or '').toUpperCase()]
   
   initLogging = (json) ->
-    json = JSON.parse json if typeof json is 'string'
+    json = JsonParser.parse json if typeof json is 'string'
     adapters = json.adapters ? json.adapter or []
     
     if adapters.length
