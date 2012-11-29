@@ -6,33 +6,75 @@ Logging
 
 Usage
 -----
-Example usage in **CoffeeScript** (Javascript usage is similar):
+Example usage in **CoffeeScript** (Javascript usage see below):
 
 ```coffeescript
-Log = require('Log')
+Log = require 'Logging'
 
 # Create new Log instance with the name my-log-name and default log level INFO
-log = new Log('my-log-name')
+log = new Log 'my-log-name'
 
 # Ordinary logging
-log.info('First log message')
+log.info 'First log message'
 
-log.debug('Not displayed due to lower log level')
+log.debug 'Not displayed due to lower log level'
 
 # Output all levels
 log.level = Log.Level.ALL
 
-log.debug('This is now {} by {}', 'displayed', log.name)           # Output: This is now displayed by my-log-name
+log.debug 'This is now {} by {}', 'displayed', log.name
+# Output: This is now displayed by my-log-name
 
-log.debug('Display arguments in any order: {1} and {0}', 14, 36)   # Output: Display arguments in any order: 36 and 14
+log.debug 'Display arguments in any order: {1} and {0} and again {1}', 14, 36
+# Output: Display arguments in any order: 36 and 14 and again 36
 
-log.debug(-> JSON.stringify { foo: 'bar' })                        # Function is only executed if logging actually happens, can be used for expensive operations
-                                                                   # Output: {"foo":"bar"}
+# Function is only executed if logging actually happens, should be used for expensive operations or any non-trivial arguments
+log.debug -> JSON.stringify { foo: 'bar' }
+# Output: {"foo":"bar"}
 
-log.debug (done) ->                                                # Asynchronous logging after two seconds
-    setTimeout ->                                                  # Output: {"abc":"xyz"}
-        done(JSON.stringify { abc: 'xyz' })
+# Asynchronous logging after two seconds
+log.debug (done) ->
+    setTimeout ->
+        done JSON.stringify { abc: 'xyz' }
     , 2000
+# Output: {"abc":"xyz"}
+```
+
+Example usage in **Javascript**:
+
+```javascript
+var Log = require("Logging"),
+
+	// Create new Log instance with the name my-log-name and default log level INFO
+	log = new Log("my-log-name");
+
+// Ordinary logging
+log.info("First log message");
+
+log.debug("Not displayed due to lower log level");
+
+// Output all levels
+log.level = Log.Level.ALL;
+
+log.debug("This is now {} by {}", "displayed", log.name);
+// Output: This is now displayed by my-log-name
+
+log.debug("Display arguments in any order: {1} and {0} and again {1}", 14, 36);
+// Output: Display arguments in any order: 36 and 14 and again 36
+
+// Function is only executed if logging actually happens, should be used for expensive operations or any non-trivial arguments
+log.debug(function() {
+	return JSON.stringify({ foo: "bar" });
+});
+// Output: {"foo":"bar"}
+
+// Asynchronous logging after two seconds
+log.debug(function(done) {
+	setTimeout(function() {
+		done(JSON.stringify({ abc: "xyz" }));
+	}, 2000);
+});
+// Output: {"abc":"xyz"}
 ```
 
 
