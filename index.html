@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Logging : Provides logging facility inspired by SLF4J in Java" />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Logging</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/jceme/Logging">View on GitHub</a>
+
+          <h1 id="project_title">Logging</h1>
+          <h2 id="project_tagline">Provides logging facility inspired by SLF4J in Java</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/jceme/Logging/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/jceme/Logging/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
+<a name="logging" class="anchor" href="#logging"><span class="octicon octicon-link"></span></a>Logging</h1>
+
+<p><strong>Logging</strong> is a logging facility written in <a href="http://coffeescript.org/">CoffeeScript</a> based on the famous <a href="http://www.slf4j.org/">SLF4J framework</a> known from Java.</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Example usage in <strong>CoffeeScript</strong> (Javascript usage see below):</p>
+
+<div class="highlight"><pre><span class="nv">Log = </span><span class="nx">require</span> <span class="s">'Logging'</span>
+
+<span class="c1"># Create new Log instance with the name my-log-name and default log level INFO</span>
+<span class="nv">log = </span><span class="k">new</span> <span class="nx">Log</span> <span class="s">'my-log-name'</span>
+
+<span class="c1"># Ordinary logging</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">info</span> <span class="s">'First log message'</span>
+
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span> <span class="s">'Not displayed due to lower log level'</span>
+
+<span class="c1"># Output all levels</span>
+<span class="nv">log.level = </span><span class="nx">Log</span><span class="p">.</span><span class="nx">Level</span><span class="p">.</span><span class="nx">ALL</span>
+
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span> <span class="s">'This is now {} by {}'</span><span class="p">,</span> <span class="s">'displayed'</span><span class="p">,</span> <span class="nx">log</span><span class="p">.</span><span class="nx">name</span>
+<span class="c1"># Output: This is now displayed by my-log-name</span>
+
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span> <span class="s">'Display arguments in any order: {1} and {0} and again {1}'</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">36</span>
+<span class="c1"># Output: Display arguments in any order: 36 and 14 and again 36</span>
+
+<span class="c1"># Function is only executed if logging actually happens, should be used for expensive operations or any non-trivial arguments</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span> <span class="nf">-&gt;</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span> <span class="p">{</span> <span class="nv">foo: </span><span class="s">'bar'</span> <span class="p">}</span>
+<span class="c1"># Output: {"foo":"bar"}</span>
+
+<span class="c1"># Asynchronous logging after two seconds</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span> <span class="nf">(done) -&gt;</span>
+    <span class="nx">setTimeout</span> <span class="nf">-&gt;</span>
+        <span class="nx">done</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span> <span class="p">{</span> <span class="nv">abc: </span><span class="s">'xyz'</span> <span class="p">}</span>
+    <span class="p">,</span> <span class="mi">2000</span>
+<span class="c1"># Output: {"abc":"xyz"}</span>
+</pre></div>
+
+<p>Example usage in <strong>Javascript</strong>:</p>
+
+<div class="highlight"><pre><span class="kd">var</span> <span class="nx">Log</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="s2">"Logging"</span><span class="p">),</span>
+
+    <span class="c1">// Create new Log instance with the name my-log-name and default log level INFO</span>
+    <span class="nx">log</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">Log</span><span class="p">(</span><span class="s2">"my-log-name"</span><span class="p">);</span>
+
+<span class="c1">// Ordinary logging</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">info</span><span class="p">(</span><span class="s2">"First log message"</span><span class="p">);</span>
+
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="s2">"Not displayed due to lower log level"</span><span class="p">);</span>
+
+<span class="c1">// Output all levels</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">level</span> <span class="o">=</span> <span class="nx">Log</span><span class="p">.</span><span class="nx">Level</span><span class="p">.</span><span class="nx">ALL</span><span class="p">;</span>
+
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="s2">"This is now {} by {}"</span><span class="p">,</span> <span class="s2">"displayed"</span><span class="p">,</span> <span class="nx">log</span><span class="p">.</span><span class="nx">name</span><span class="p">);</span>
+<span class="c1">// Output: This is now displayed by my-log-name</span>
+
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="s2">"Display arguments in any order: {1} and {0} and again {1}"</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">36</span><span class="p">);</span>
+<span class="c1">// Output: Display arguments in any order: 36 and 14 and again 36</span>
+
+<span class="c1">// Function is only executed if logging actually happens, should be used for expensive operations or any non-trivial arguments</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span> <span class="nx">foo</span><span class="o">:</span> <span class="s2">"bar"</span> <span class="p">});</span>
+<span class="p">});</span>
+<span class="c1">// Output: {"foo":"bar"}</span>
+
+<span class="c1">// Asynchronous logging after two seconds</span>
+<span class="nx">log</span><span class="p">.</span><span class="nx">debug</span><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">done</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">done</span><span class="p">(</span><span class="nx">JSON</span><span class="p">.</span><span class="nx">stringify</span><span class="p">({</span> <span class="nx">abc</span><span class="o">:</span> <span class="s2">"xyz"</span> <span class="p">}));</span>
+    <span class="p">},</span> <span class="mi">2000</span><span class="p">);</span>
+<span class="p">});</span>
+<span class="c1">// Output: {"abc":"xyz"}</span>
+</pre></div>
+
+<h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>The auto-configuration looks for a file named <strong>logconf.json</strong> in the current or parent directories.</p>
+
+<p>You can pass a custom file name or JSON config object to the <em>Log.init()</em> method <strong>before</strong> Log instances are created.</p>
+
+<p>The JSON configuration has the following structure (all entries are optional):</p>
+
+<div class="highlight"><pre><span class="p">{</span>
+    <span class="nt">"adapters"</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"ConsoleAdapter"</span><span class="p">,</span>
+            <span class="nt">"min"</span><span class="p">:</span>  <span class="s2">"DEBUG"</span><span class="p">,</span>
+            <span class="nt">"max"</span><span class="p">:</span>  <span class="s2">"WARN"</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="nt">"type"</span><span class="p">:</span> <span class="s2">"FileAdapter"</span><span class="p">,</span>
+            <span class="nt">"min"</span><span class="p">:</span>  <span class="s2">"WARN"</span><span class="p">,</span>
+            <span class="nt">"max"</span><span class="p">:</span>  <span class="s2">"FATAL"</span><span class="p">,</span>
+            <span class="nt">"file"</span><span class="p">:</span> <span class="s2">"error.log"</span><span class="p">,</span>
+            <span class="nt">"opts"</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">"overwrite"</span><span class="p">:</span> <span class="kc">true</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+
+    <span class="nt">"levels"</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">""</span><span class="p">:</span> <span class="s2">"INFO"</span><span class="p">,</span>
+        <span class="nt">"org.foo"</span><span class="p">:</span> <span class="s2">"WARN"</span><span class="p">,</span>
+        <span class="nt">"my.app"</span><span class="p">:</span> <span class="s2">"ALL"</span><span class="p">,</span>
+        <span class="nt">"my.app.sub-module"</span><span class="p">:</span> <span class="s2">"INFO"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+<p>With <em>levels[""]</em> you can set the default log level for all logs as fall-back.</p>
+
+<h2>
+<a name="log-constructor" class="anchor" href="#log-constructor"><span class="octicon octicon-link"></span></a>Log constructor</h2>
+
+<p><code>log = new Log(name, [level], [adapter])</code></p>
+
+<ul>
+<li>
+<strong>name</strong> The required logger name used for the output line</li>
+<li>
+<em>level</em> Optionally initialize this logger to the given level instead of <em>Log.DEFAULT_LEVEL</em> (defaults to <em>Log.Level.INFO</em>)</li>
+<li>
+<em>adapter</em> Optionally use adapter for this logger instead of <em>Log.DEFAULT_ADAPTER</em> (defaults to <em>ConsoleAdapter</em>)</li>
+</ul><h2>
+<a name="log-levels" class="anchor" href="#log-levels"><span class="octicon octicon-link"></span></a>Log levels</h2>
+
+<p>The following log levels exist sorted by level importance (highest first):</p>
+
+<ul>
+<li>Log.Level.FATAL</li>
+<li>Log.Level.ERROR</li>
+<li>Log.Level.WARN</li>
+<li>Log.Level.INFO</li>
+<li>Log.Level.DEBUG</li>
+<li>Log.Level.TRACE</li>
+</ul><p>There is also <em>Log.Level.ALL</em> which will log for all log levels and <em>Log.Level.OFF</em> which completely suppresses logging.</p>
+
+<h2>
+<a name="adapters" class="anchor" href="#adapters"><span class="octicon octicon-link"></span></a>Adapters</h2>
+
+<p>You can pass any adapter you like into the Log constructor as third argument.</p>
+
+<h3>
+<a name="consoleadapter" class="anchor" href="#consoleadapter"><span class="octicon octicon-link"></span></a>ConsoleAdapter</h3>
+
+<p>This <strong>default adapter</strong> will make use of the <a href="https://getfirebug.com/wiki/index.php/Console_API">Console API</a> usually available for common environments.</p>
+
+<p>It will log the messages to the <em>console</em> object supporting its methods for different log levels.</p>
+
+<h3>
+<a name="fileadapter" class="anchor" href="#fileadapter"><span class="octicon octicon-link"></span></a>FileAdapter</h3>
+
+<p>A FileAdapter is created by <code>new FileAdapter(filepath, options)</code>.</p>
+
+<p>The optional <em>options</em> are:</p>
+
+<ul>
+<li><p><strong>nocache</strong><br>
+The default behavior is to open a file once to avoid write concurrency.
+This options disables this behavior.</p></li>
+<li><p><strong>overwrite</strong><br>
+Instead of appending to a file, overwrite it on opening.</p></li>
+<li><p><strong>openFlags</strong><br>
+For more file opening control you can pass the exact open flags with this option.</p></li>
+<li><p><strong>mode</strong><br>
+The file open mode, defaults to 0644.</p></li>
+</ul><h3>
+<a name="teeadapter" class="anchor" href="#teeadapter"><span class="octicon octicon-link"></span></a>TeeAdapter</h3>
+
+<p>Usage: <code>adapter = new TeeAdapter(adapter1, adapter2, ...)</code></p>
+
+<p>This is a pseudo adapter which just passes the adapter calls to all adapters given in the constructor.</p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Logging maintained by <a href="https://github.com/jceme">jceme</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
