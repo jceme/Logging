@@ -22,10 +22,10 @@ should = require 'should'
 suite 'Sole logging', ->
   
   test 'Log available', ->
-    Log.should.be.a 'function'
-    Log.DEFAULT_LEVEL.should.be.a 'number'
+    Log.should.be.type 'function'
+    Log.DEFAULT_LEVEL.should.be.type 'number'
     Log.DEFAULT_ADAPTER.should.be.ok
-    Log.Level.should.be.a 'object'
+    Log.Level.should.be.type 'object'
   
   
   test 'Log creatable', ->
