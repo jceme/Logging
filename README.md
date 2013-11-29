@@ -140,6 +140,17 @@ The following log levels exist sorted by level importance (highest first):
 There is also *Log.Level.ALL* which will log for all log levels and *Log.Level.OFF* which completely suppresses logging.
 
 
+Log level resolution
+--------------------
+When a Log with name **foo.bar.Myname** is created, the appropriate log level is resolved as follows:
+
+1. Use level configuration for "foo.bar.Myname" if set
+2. Use level configuration for "foo.bar" if set
+3. Use level configuration for "foo" if set
+4. Use level configuration for "" if set
+5. Use internal default log level
+
+
 Adapters
 --------
 You can pass any adapter you like into the Log constructor as third argument.
@@ -152,7 +163,7 @@ It will log the messages to the *console* object supporting its methods for diff
 ### FileAdapter
 A FileAdapter is created by `new FileAdapter(filepath, options)`.
 
-The optional *options* are:
+The *options* are:
 * **nocache**  
 The default behavior is to open a file once to avoid write concurrency.
 This options disables this behavior.
