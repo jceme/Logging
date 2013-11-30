@@ -9,19 +9,27 @@ DEFAULT_TYPE = 'ConsoleLogger'
 module.exports =
 
 	findAndConfigureLogging: (logfilename) ->
-		# Look for logfilename in this and parent directories
-		dir = '.'
-		last = null
+		if /^\//.test logfilename
+			# Absolute file name
+			if fs.existsSync(logfilename) and do fs.statSync(logfilename).isFile
+				return @createLoggers JsonParser.parse do fs.readFileSync(logfilename).toString
 		
-		while on
-			p = path.resolve dir, logfilename
-			break if p is last  # Cannot get any higher
+		else
+			# Look for logfilename in current working dir and its parents
+			dir = '.'
+			last = null
 			
-			if fs.existsSync(p) and do fs.statSync(p).isFile
-				return @createLoggers JsonParser.parse do fs.readFileSync(p).toString
-			
-			last = p
-			dir = if dir is '.' then '..' else "#{dir}/.."
+			while on
+				p = path.resolve dir, logfilename
+				break if p is last  # Cannot get any higher
+				
+				if fs.existsSync(p) and do fs.statSync(p).isFile
+					try
+						json = JsonParser.parse do fs.readFileSync(p).toString
+						return @createLoggers json
+				
+				last = p
+				dir += '/..'
 		
 		do @createLoggers
 	
@@ -38,9 +46,13 @@ module.exports =
 			
 			opts.levels = stdLevels if 'levels' not of opts and 'level' not of opts
 			
-			clazz = require type
-			
-			new clazz opts
+			try
+				clazz = require type
+				new clazz opts
+			catch
+				null
+		
+		loggers = loggers.filter (x) -> x
 		
 		if loggers.length > 1
 			TeePseudoLogger = require '../loggers/TeePseudoLogger'
