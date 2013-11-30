@@ -1,0 +1,22 @@
+/*
+ * This is a test logging configuration.
+ */
+{
+	"adapters": [
+		{
+			"type": "ConsoleAdapter",
+			"min":  "ERROR"
+			// Notice no max here
+		},
+		{
+			"type": "ConsoleAdapter",
+			"min":  "DEBUG",
+			"max":  "INFO"
+		}
+	],
+	"levels": {
+		"": "DEBUG",
+		"my.logger": "ERROR",
+		"my.logger.other": "ALL"
+	}
+}

@@ -16,7 +16,7 @@
     "should": "2.1.x"
   },
   "scripts": {
-    "pretest": "./node_modules/.bin/coffee -c -o js src/",
+    "pretest": "./node_modules/.bin/coffee -c -o js src/ && ./node_modules/.bin/coffee -c -o js/test test/",
     "test": "./node_modules/.bin/mocha -u tdd -R spec js/test/Log.test"
   },
   "repository": {
