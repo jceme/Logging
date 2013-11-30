@@ -15,7 +15,7 @@ module.exports = class AbstractLogger
 	
 	parseLevelConfig = (opts) ->
 		levelset = {}
-		levels = opts.levels ? {}
+		levels = opts.levels ? opts.level ? {}
 		levels[''] ?= DEFAULT_LOG_LEVEL
 		
 		min = LogLevels[do opts.min?.toLowerCase] ? 0

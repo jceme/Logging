@@ -3,11 +3,30 @@ module.exports = class Log
 	'use strict'
 	
 	LogLevels = require './util/LogLevels'
+	LogAutoConfigurer = require './util/LogAutoConfigurer'
+	
 	defineProperty = Object.defineProperty
+	
+	DEFAULT_LOGCONFIG = 'logconf.json'
 	
 	
 	# Log consumer
-	Logger = null  # TODO
+	Logger = null
+	
+	@initLogging: (configfile, silent) ->
+		try
+			logger = LogAutoConfigurer.findAndConfigureLogging configfile or DEFAULT_LOGCONFIG
+		catch e
+			throw e unless silent
+		
+		Log.setLogger logger
+	
+	@setLogger: (logger) ->
+		throw new Error 'Logger not usable' unless logger?
+		Logger = logger
+		return
+	
+	@initLogging null, yes
 	
 	
 	
