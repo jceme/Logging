@@ -48,10 +48,10 @@ module.exports = class AbstractLogger
 		@formatPattern = (opts.formatPattern ? opts.formatPattern ? opts.formatPattern ? '%{DATETIME} [%L] %n: %m')
 		.replace /%\{(\w*)\}/g, (_, code) ->
 			switch do code.toUpperCase
-				when 'DATETIME'         then '%Y-%M-%D %H:%i%s.%S'
-				when 'DATETIME_ISO8601' then '%Y-%M-%DT%H:%i%s.%S'
+				when 'DATETIME'         then '%Y-%M-%D %H:%i:%s.%S'
+				when 'DATETIME_ISO8601' then '%Y-%M-%DT%H:%i:%s.%S'
 				when 'DATE'             then '%Y-%M-%D'
-				when 'TIME'             then '%H:%i%s.%S'
+				when 'TIME'             then '%H:%i:%s.%S'
 				else                         ''
 		
 	
@@ -91,4 +91,4 @@ module.exports = class AbstractLogger
 				else          ''
 	
 	
-	logMessage: (obj) -> log formatLogMessage obj
+	logMessage: (obj) -> @log @formatLogMessage obj

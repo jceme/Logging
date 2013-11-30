@@ -63,7 +63,7 @@ module.exports = class Log
 		levelConfig = Logger.getLevelConfig(nameParts) ? 0
 		
 		# Define logger methods
-		for levelname, level of LogLevels then do (levelname, level) ->
+		for levelname, level of LogLevels then do (levelname, level) =>
 			granted = levelConfig & level isnt 0
 			
 			logfunc =

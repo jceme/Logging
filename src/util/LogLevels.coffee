@@ -1,4 +1,4 @@
-module.exports = [
+module.exports =
 
 	Fatal:   1
 	Error:   2
@@ -6,5 +6,3 @@ module.exports = [
 	Info:    8
 	Debug:   16
 	Trace:   32
-
-]
