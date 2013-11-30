@@ -28,7 +28,7 @@ module.exports = class Log
 				args[if idx then parseInt idx, 10 else i++]
 		
 		return
-			
+	
 	
 	
 	# Log producer
@@ -41,19 +41,23 @@ module.exports = class Log
 		# Expose logger name
 		defineProperty @, 'name', enumerable: yes, get: -> name
 		
-		levelConfig = Logger.getLevelConfig nameParts
+		levelConfig = Logger.getLevelConfig(nameParts) ? 0
 		
 		# Define logger methods
-		for level in LogLevels then do (level) ->
-			granted = not not levelConfig[level]
-			lclevel = do level.toLowerCase
+		for levelname, level of LogLevels then do (levelname, level) ->
+			granted = levelConfig & level isnt 0
 			
 			logfunc =
 				if granted then (msg, args...) ->
 					buildLogMessage msg, args, (logMessage) ->
-						Logger[lclevel] level: level, msg: logMessage, name: name, parts: nameParts, date: new Date()
+						Logger.logMessage
+							level: levelname
+							msg: logMessage
+							name: name
+							parts: nameParts
+							date: new Date()
 				
 				else -> return
 			
-			defineProperty @, "is#{level}", configurable: yes, enumerable: no, writable: no, value: -> granted
-			defineProperty @, lclevel, configurable: yes, enumerable: no, writable: no, value: logfunc
+			defineProperty @, "is#{levelname}", configurable: yes, enumerable: no, writable: no, value: -> granted
+			defineProperty @, do levelname.toLowerCase, configurable: yes, enumerable: no, writable: no, value: logfunc
