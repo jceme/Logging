@@ -2,7 +2,7 @@ module.exports = class Log
 	
 	'use strict'
 	
-	LogLevels = require './LogLevels'
+	LogLevels = require './util/LogLevels'
 	defineProperty = Object.defineProperty
 	
 	

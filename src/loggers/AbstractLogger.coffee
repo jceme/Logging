@@ -4,7 +4,7 @@ module.exports = class AbstractLogger
 	
 	LogLevels = do ->
 		l = {}
-		l[do n.toLowerCase] = v for n, v of require '../LogLevels'
+		l[do n.toLowerCase] = v for n, v of require '../util/LogLevels'
 		l
 	
 	SortedLogLevels = (n: n, v: v for n, v of LogLevels).sort((a, b) -> b.v - a.v).map((a) -> a.n)
