@@ -13,13 +13,13 @@ module.exports = class Log
 	# Log consumer
 	Logger = null
 	
-	@initLogging: (configfile, silent) ->
+	@initLogging: (configfile, silent) =>
 		try
-			logger = LogAutoConfigurer.findAndConfigureLogging configfile or DEFAULT_LOGCONFIG
+			logger = LogAutoConfigurer.findAndConfigureLogging configfile or DEFAULT_LOGCONFIG, not silent
 		catch e
 			throw e unless silent
 		
-		Log.setLogger logger
+		@setLogger logger
 	
 	@setLogger: (logger) ->
 		throw new Error 'Logger not usable' unless logger?

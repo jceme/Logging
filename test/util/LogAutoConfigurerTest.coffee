@@ -1,7 +1,5 @@
 require 'should'
 assert = require 'assert'
-fs = require 'fs'
-path = require 'path'
 mockery = require 'mockery'
 nodemock = require 'nodemock'
 

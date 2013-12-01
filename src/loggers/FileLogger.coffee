@@ -10,21 +10,35 @@ module.exports = do ->
 		
 		cache = {}
 		
-		process.on 'exit', ->
-			for fd in cache
-				try fs.closeSync fd
+		@closeAllOpenFiles: (croak) ->
+			for _, fd of cache
+				try
+					fs.closeSync fd
+				
+				catch e
+					throw e if croak
+			
+			cache = {}
 			return
 		
 		
+		process.on 'exit', => do @closeAllOpenFiles
 		
-		constructor: (opts = {}) ->
+		
+		
+		constructor: (opts = {}, @croak) ->
 			super
 			
 			filepath = path.resolve opts.file or opts.filename or 'logging.log'
 			@fd = cache[filepath] ?= fs.openSync filepath, opts.openFlags or opts.flags or (if opts.overwrite ? not(opts.append ? yes) then 'w' else 'a'), opts.mode ? 0o644
 		
 		
-		log: (line) -> try fs.writeSync @fd, "#{line}\n"
+		log: (line) ->
+			try
+				fs.writeSync @fd, "#{line}\n"
+				
+			catch e
+				throw e if @croak
 		
 		
 		toString: -> 'FileLogger'
