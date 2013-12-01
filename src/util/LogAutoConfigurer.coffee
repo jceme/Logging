@@ -1,41 +1,55 @@
-fs = require 'fs'
-path = require 'path'
-JsonParser = require 'RelaxedJsonParser'
-
 
 DEFAULT_TYPE = 'ConsoleLogger'
 
 
 module.exports =
 
-	findAndConfigureLogging: (logfilename) ->
+	findAndConfigureLogging: (logfilename, croak) ->
+		throw new Error 'File name required' unless logfilename
+		
 		if /^\//.test logfilename
 			# Absolute file name
-			if fs.existsSync(logfilename) and do fs.statSync(logfilename).isFile
-				return @createLoggers JsonParser.parse do fs.readFileSync(logfilename).toString
+			logger = @createLoggersFrom logfilename, croak
+			return logger if logger?
 		
 		else
 			# Look for logfilename in current working dir and its parents
 			dir = '.'
 			last = null
+			path = require 'path'
 			
 			while on
 				p = path.resolve dir, logfilename
 				break if p is last  # Cannot get any higher
 				
-				if fs.existsSync(p) and do fs.statSync(p).isFile
-					try
-						json = JsonParser.parse do fs.readFileSync(p).toString
-						return @createLoggers json
+				logger = @createLoggersFrom p, croak
+				return logger if logger?
 				
 				last = p
 				dir += '/..'
 		
-		do @createLoggers
+		@createLoggers null, croak
 	
 	
 	
-	createLoggers: (config = {}) ->
+	createLoggersFrom: (filepath, croak) ->
+		fs = require 'fs'
+		JsonParser = require 'RelaxedJsonParser'
+		
+		if fs.existsSync(filepath) and do fs.statSync(filepath).isFile
+			try
+				content = do fs.readFileSync(filepath).toString
+				json = JsonParser.parse content
+				return @createLoggers json, croak
+			
+			catch e
+				throw e if croak
+		
+		null
+	
+	
+	
+	createLoggers: (config = {}, croak) ->
 		stdLevels = config.levels ? config.level ? {}
 		
 		loggers = config.loggers ? config.logger ? config.adapters ? config.adapter ? [ {} ]
@@ -48,9 +62,12 @@ module.exports =
 			
 			try
 				clazz = require type
-				new clazz opts
-			catch
-				null
+				return new clazz opts
+			
+			catch e
+				throw e if croak
+			
+			null
 		
 		loggers = loggers.filter (x) -> x
 		
