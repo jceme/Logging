@@ -18,7 +18,7 @@ suite 'Sanity checks', ->
 	]
 		test "Require ok for #{name}", ->
 			obj = null
-			fn = -> obj = require "../../../../#{name}"
+			fn = -> obj = require "../../#{name}"
 			fn.should.not.throwError()
 			assert.ok obj
 	
@@ -45,11 +45,11 @@ suite 'findAndConfigureLogging', ->
 		mockery.registerMock 'fs', _fs = mkmock('__noop').fail()
 		mockery.registerMock 'path', _path = mkmock('__noop').fail()
 		mockery.registerAllowables [
-			'../../../../util/LogAutoConfigurer'
+			'../../util/LogAutoConfigurer'
 			'RelaxedJsonParser'
 			'./PegjsJsonParser'
 		]
-		LogAutoConfigurer = require '../../../../util/LogAutoConfigurer'
+		LogAutoConfigurer = require '../../util/LogAutoConfigurer'
 	
 	teardown ->
 		do mock.assertThrows for mock in mocks
@@ -142,9 +142,9 @@ suite 'createLoggers', ->
 	setup ->
 		mocks = []
 		mockery.registerAllowables [
-			'../../../../util/LogAutoConfigurer'
+			'../../util/LogAutoConfigurer'
 		]
-		LogAutoConfigurer = require '../../../../util/LogAutoConfigurer'
+		LogAutoConfigurer = require '../../util/LogAutoConfigurer'
 	
 	teardown ->
 		do mock.assertThrows for mock in mocks
