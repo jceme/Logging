@@ -13,7 +13,7 @@ module.exports = class Log
 	Logger = null
 	
 	@initLogging: (configfile) =>
-		logger = require('./util/LogAutoConfigurer').findAndConfigureLogging configfile or DEFAULT_LOGCONFIG, on
+		logger = require('./util/LogAutoConfigurer').findAndConfigureLogging configfile or DEFAULT_LOGCONFIG
 		@setLogger logger
 	
 	@setLogger: (logger) ->

@@ -4,12 +4,12 @@ DEFAULT_TYPE = 'ConsoleLogger'
 
 module.exports =
 
-	findAndConfigureLogging: (logfilename, croak) ->
+	findAndConfigureLogging: (logfilename) ->
 		throw new Error 'File name required' unless logfilename
 		
 		if /^\//.test logfilename
 			# Absolute file name
-			logger = @createLoggersFrom logfilename, croak
+			logger = @createLoggersFrom logfilename
 			return logger if logger?
 		
 		else
@@ -22,34 +22,31 @@ module.exports =
 				p = path.resolve dir, logfilename
 				break if p is last  # Cannot get any higher
 				
-				logger = @createLoggersFrom p, croak
+				logger = @createLoggersFrom p
 				return logger if logger?
 				
 				last = p
 				dir += '/..'
 		
-		@createLoggers null, croak
+		do @createLoggers
 	
 	
 	
-	createLoggersFrom: (filepath, croak) ->
+	createLoggersFrom: (filepath) ->
 		fs = require 'fs'
 		JsonParser = require 'RelaxedJsonParser'
 		
 		if fs.existsSync(filepath) and do fs.statSync(filepath).isFile
-			try
-				content = do fs.readFileSync(filepath).toString
-				json = JsonParser.parse content
-				return @createLoggers json, croak
-			
-			catch e
-				throw e if croak
+
+			content = do fs.readFileSync(filepath).toString
+			json = JsonParser.parse content
+			return @createLoggers json
 		
 		null
 	
 	
 	
-	createLoggers: (config = {}, croak) ->
+	createLoggers: (config = {}) ->
 		stdLevels = config.levels ? config.level ? {}
 		
 		loggers = config.loggers ? config.logger ? config.adapters ? config.adapter ? [ {} ]
@@ -60,14 +57,8 @@ module.exports =
 			
 			opts.levels = stdLevels if 'levels' not of opts and 'level' not of opts
 			
-			try
-				clazz = require type
-				return new clazz opts
-			
-			catch e
-				throw e if croak
-			
-			null
+			clazz = require type
+			new clazz opts
 		
 		loggers = loggers.filter (x) -> x
 		

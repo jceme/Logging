@@ -50,60 +50,59 @@ suite 'Log producer', ->
 			getLevelConfig: -> assert no
 			logMessage: -> assert no
 		
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		require '../Log'
 	
 	test 'Simple init null logger', ->
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(null)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(null)
 		
 		(-> require '../Log').should.throwError 'Logger not usable'
 	
 	test 'Simple init fails finding logger', ->
-		_cnf.findAndConfigureLogging = (n, c) ->
-			arguments.length.should.equal 2
+		_cnf.findAndConfigureLogging = (n) ->
+			arguments.length.should.equal 1
 			n.should.equal 'logconf.json'
-			c.should.equal on
 			throw new Error 'Cannot find any logger'
 		
 		(-> require '../Log').should.throwError 'Cannot find any logger'
 	
 	test 'Simple init incomplete logger', ->
 		logger = {}
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		(-> require '../Log').should.throwError 'Logger not usable'
 		do mockery.resetCache
 		
 		logger =
 			getLevelConfig: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		(-> require '../Log').should.throwError 'Logger not usable'
 		do mockery.resetCache
 		
 		logger =
 			logMessage: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		(-> require '../Log').should.throwError 'Logger not usable'
 		do mockery.resetCache
 		
 		logger =
 			getLevelConfig: -> assert no
 			logMessage: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		require '../Log'
 	
 	test 'Simple init with file name', ->
 		logger =
 			getLevelConfig: -> assert no
 			logMessage: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		Log = require '../Log'
 		
 		logger =
 			getLevelConfig: -> assert no
 			logMessage: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('foo.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('foo.json').returns(logger)
 		
 		Log.initLogging 'foo.json'
 	
@@ -111,14 +110,13 @@ suite 'Log producer', ->
 		logger =
 			getLevelConfig: -> assert no
 			logMessage: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		Log = require '../Log'
 		
-		_cnf.findAndConfigureLogging = (n, c) ->
-			arguments.length.should.equal 2
+		_cnf.findAndConfigureLogging = (n) ->
+			arguments.length.should.equal 1
 			n.should.equal 'foo.json'
-			c.should.equal on
 			throw new Error 'Cannot find any logger'
 		
 		(-> Log.initLogging 'foo.json').should.throwError 'Cannot find any logger'
@@ -127,7 +125,7 @@ suite 'Log producer', ->
 		logger =
 			getLevelConfig: -> 0
 			logMessage: -> assert no
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		Log = require '../Log'
 		
@@ -159,10 +157,10 @@ suite 'Log producer', ->
 				obj.msg.should.equal 'My test message'
 				c2++
 		
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		Log = require '../Log'
 		
-		_cnf.mock('findAndConfigureLogging').takes('foo.json', on).returns(null)
+		_cnf.mock('findAndConfigureLogging').takes('foo.json').returns(null)
 		(-> Log.initLogging 'foo.json').should.throwError 'Logger not usable'
 		
 		# Test if old logger still used
@@ -192,7 +190,7 @@ suite 'Log producer', ->
 					obj.date.should.be.instanceOf Date
 					c2++
 			
-			_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+			_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 			
 			Log = require '../Log'
 			log = new Log 'abc.xyz'
@@ -208,7 +206,7 @@ suite 'Log producer', ->
 		logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(LogLevels.Debug | LogLevels.Warn)
 		logger.mock('logMessage').takes(level: 'Debug')
 		logger.mock('logMessage').takes(level: 'Warn')
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		Log = require '../Log'
 		log = new Log 'abc.xyz'
@@ -227,7 +225,7 @@ suite 'Log producer', ->
 		test "Log call with #{logcallparams}", ->
 			logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(LogLevels.Debug)
 			logger.mock('logMessage').takes(level: 'Debug', msg: logcallresult)
-			_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+			_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 			
 			Log = require '../Log'
 			log = new Log 'abc.xyz'
@@ -236,7 +234,7 @@ suite 'Log producer', ->
 	test "Log call with function result", ->
 		logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(LogLevels.Debug)
 		logger.mock('logMessage').takes(level: 'Debug', msg: 'Function result {}')
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		Log = require '../Log'
 		log = new Log 'abc.xyz'
@@ -245,7 +243,7 @@ suite 'Log producer', ->
 	test "Log call with asynchronous function result", (done) ->
 		logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(LogLevels.Debug)
 		logger.mock('logMessage').takes(level: 'Debug', msg: 'Asynchronous function result')
-		_cnf.mock('findAndConfigureLogging').takes('logconf.json', on).returns(logger)
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
 		Log = require '../Log'
 		log = new Log 'abc.xyz'
