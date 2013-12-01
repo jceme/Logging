@@ -20,8 +20,8 @@
   },
   "scripts": {
     "pretest": "rm -rf js; ./node_modules/.bin/coffee -c -o js src/ && ./node_modules/.bin/coffee -c -o js/test test/",
-    "test": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -u tdd -R spec js/test/**/*Test.js",
-    "_test": "./node_modules/.bin/mocha -u tdd -R spec debug js/test/**/*Test.js"
+    "test": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -u tdd -R spec js/test/*Test.js js/test/**/*Test.js",
+    "_test": "./node_modules/.bin/mocha -u tdd -R spec debug js/test/*Test.js js/test/**/*Test.js"
   },
   "repository": {
     "type": "git",

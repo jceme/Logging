@@ -3,7 +3,6 @@ module.exports = class Log
 	'use strict'
 	
 	LogLevels = require './util/LogLevels'
-	LogAutoConfigurer = require './util/LogAutoConfigurer'
 	
 	defineProperty = Object.defineProperty
 	
@@ -13,20 +12,19 @@ module.exports = class Log
 	# Log consumer
 	Logger = null
 	
-	@initLogging: (configfile, silent) =>
-		try
-			logger = LogAutoConfigurer.findAndConfigureLogging configfile or DEFAULT_LOGCONFIG, not silent
-		catch e
-			throw e unless silent
-		
+	@initLogging: (configfile) =>
+		logger = require('./util/LogAutoConfigurer').findAndConfigureLogging configfile or DEFAULT_LOGCONFIG, on
 		@setLogger logger
 	
 	@setLogger: (logger) ->
-		throw new Error 'Logger not usable' unless logger?
+		if not logger? or typeof logger.getLevelConfig isnt 'function' or typeof logger.logMessage isnt 'function'
+			throw new Error 'Logger not usable'
+		
 		Logger = logger
 		return
 	
-	@initLogging null, yes
+	
+	do @initLogging
 	
 	
 	
@@ -64,7 +62,7 @@ module.exports = class Log
 		
 		# Define logger methods
 		for levelname, level of LogLevels then do (levelname, level) =>
-			granted = levelConfig & level isnt 0
+			granted = not not (levelConfig & level)
 			
 			logfunc =
 				if granted then (msg, args...) ->
