@@ -7,7 +7,7 @@ nodemock = require 'nodemock'
 
 
 
-suite 'Sanity checks', ->
+suite 'LogAutoConfigurer: Sanity checks', ->
 	
 	for name in [
 		'util/LogAutoConfigurer'
@@ -26,7 +26,7 @@ suite 'Sanity checks', ->
 	
 
 
-suite 'findAndConfigureLogging', ->
+suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 	
 	LogAutoConfigurer = _fs = _path = mocks = null
 	
@@ -125,7 +125,7 @@ suite 'findAndConfigureLogging', ->
 
 
 
-suite 'createLoggers', ->
+suite 'LogAutoConfigurer.createLoggers', ->
 	
 	LogAutoConfigurer = mocks = null
 	

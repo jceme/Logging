@@ -1,8 +1,8 @@
 module.exports =
 
-	Fatal:   1
-	Error:   2
-	Warn:    4
-	Info:    8
-	Debug:   16
-	Trace:   32
+	Trace:   1
+	Debug:   2
+	Info:    4
+	Warn:    8
+	Error:   16
+	Fatal:   32
