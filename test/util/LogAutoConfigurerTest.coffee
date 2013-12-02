@@ -148,6 +148,12 @@ suite 'LogAutoConfigurer.createLoggers', ->
 		
 		LogAutoConfigurer.createLoggers().should.equal logger
 	
+	test 'Single Private type logger', ->
+		logger = {}
+		mockery.registerMock 'my/test/PrivateLogger', mkmock('_').takes(levels: { 'abc': 'DEBUG' }).returns(logger)._
+		
+		LogAutoConfigurer.createLoggers(loggers: { type: 'my/test/PrivateLogger' }, levels: { 'abc': 'DEBUG' }).should.equal logger
+	
 	test 'Spec with garbage', ->
 		logger = {}
 		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: {}).returns(logger)._

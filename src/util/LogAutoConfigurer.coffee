@@ -51,6 +51,8 @@ module.exports =
 		
 		loggers = config.loggers ? config.logger ? config.adapters ? config.adapter ? [ {} ]
 		
+		loggers = [ loggers ] unless loggers instanceof Array
+		
 		loggers = loggers.map (opts) ->
 			type = do "#{opts.type ? DEFAULT_TYPE}".trim
 			type = "../loggers/#{type}" if /^\w+$/.test type
