@@ -248,3 +248,13 @@ suite 'Log producer', ->
 		Log = require '../Log'
 		log = new Log 'abc.xyz'
 		log.debug (logdone) -> setTimeout (-> logdone 'Asynchronous function result'; done()), 10
+	
+	test 'toString', ->
+		logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(LogLevels.Debug)
+		logger.mock('logMessage').fail()
+		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
+		
+		Log = require '../Log'
+		log = new Log '   abc.xyz '
+		log.toString().should.equal 'Logger abc.xyz'
+		log.name.should.equal 'abc.xyz'

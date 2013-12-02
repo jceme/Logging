@@ -62,7 +62,7 @@ module.exports = class Log
 		
 		# Define logger methods
 		for levelname, level of LogLevels then do (levelname, level) =>
-			granted = not not (levelConfig & level)
+			granted = !!(levelConfig & level)
 			
 			logfunc =
 				if granted then (msg, args...) ->
@@ -78,3 +78,6 @@ module.exports = class Log
 			
 			defineProperty @, "is#{levelname}", configurable: yes, enumerable: no, writable: no, value: -> granted
 			defineProperty @, do levelname.toLowerCase, configurable: yes, enumerable: no, writable: no, value: logfunc
+	
+	
+	toString: -> "Logger #{@name}"
