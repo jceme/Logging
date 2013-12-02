@@ -20,7 +20,7 @@ module.exports = do ->
 		
 		logMessage: (obj) ->
 			log = @outputs[obj.level] ? @outputs.Info
-			log formatLogMessage obj
+			log @formatLogMessage obj
 		
 		
 		toString: -> 'ConsoleLogger'

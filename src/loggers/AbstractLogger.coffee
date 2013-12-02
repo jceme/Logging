@@ -12,6 +12,8 @@ module.exports = class AbstractLogger
 	
 	DEFAULT_LOG_LEVEL = 'INFO'
 	
+	DEFAULT_FORMAT_PATTERN = '%{DATETIME} %L  %n: %m'
+	
 	
 	parseLevelConfig = (opts) ->
 		levelset = {}
@@ -57,7 +59,7 @@ module.exports = class AbstractLogger
 	constructor: (opts = {}) ->
 		@levelConfig = parseLevelConfig opts
 		
-		@formatPattern = (opts.formatPattern ? opts.format ? opts.pattern ? '%{DATETIME} [%L] %n: %m')
+		@formatPattern = (opts.formatPattern ? opts.format ? opts.pattern ? DEFAULT_FORMAT_PATTERN)
 		.replace /%\{(\w*)\}/g, (_, code) ->
 			switch do code.toUpperCase
 				when 'DATETIME'         then '%Y-%M-%D %H:%i:%s.%S'
@@ -79,9 +81,14 @@ module.exports = class AbstractLogger
 		throw new Error 'Invalid internal level config'
 	
 	
-	pad = (s, n = 2, c = '0') ->
+	pad = (s, n = 2) ->
 		s = "#{s}"
-		s = "#{c}#{s}" while s.length < n
+		s = "0#{s}" while s.length < n
+		s
+	
+	rpad = (s, n) ->
+		s = "#{s}"
+		s += ' ' while s.length < n
 		s
 	
 	formatLogMessage: (obj) ->
@@ -92,7 +99,7 @@ module.exports = class AbstractLogger
 				when 'n'
 					if cnt? then obj.parts.slice(-1 - cnt).join '.'
 					else obj.name
-				when 'L' then pad do obj.level.toUpperCase, cnt ? 0, ' '
+				when 'L' then rpad do obj.level.toUpperCase, cnt ? 5
 				when 'D' then pad do obj.date.getDate, cnt
 				when 'M' then pad 1 + do obj.date.getMonth, cnt
 				when 'Y' then pad do obj.date.getFullYear, cnt ? 0

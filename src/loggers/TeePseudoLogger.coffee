@@ -4,7 +4,7 @@ module.exports = do ->
 
 	class TeePseudoLogger
 		
-		constructor: (@loggers) ->
+		constructor: (@loggers = []) ->
 		
 		
 		getLevelConfig: (parts) -> @loggers.map((logger) -> logger.getLevelConfig parts).reduce ((p, c) -> p | c), 0

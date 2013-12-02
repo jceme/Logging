@@ -184,7 +184,7 @@ suite 'AbstractLogger.logMessage', ->
 	test 'With format flags', ->
 		testLogMessage(
 			'%%Y %%%Y %6Y %1Y %M %3M %D %0D - %H %i %0i %s %S %4S %2S %1S - %T %15T - %L [%6L] - %n: %m',
-			'%Y %2013 002013 2013 11 011 02 2 - 17 00 0 22 082 0082 82 82 - 1383408022082 001383408022082 - INFO [  INFO] - foo.bar.abc.TestComponent: My test message.'
+			'%Y %2013 002013 2013 11 011 02 2 - 17 00 0 22 082 0082 82 82 - 1383408022082 001383408022082 - INFO  [INFO  ] - foo.bar.abc.TestComponent: My test message.'
 		)
 	
 	test 'Name parts format', ->
