@@ -12,19 +12,19 @@ module.exports = class Log
 	# Log consumer
 	Logger = null
 	
-	@initLogging: (configfile) =>
-		logger = require('./util/LogAutoConfigurer').findAndConfigureLogging configfile or DEFAULT_LOGCONFIG
-		@setLogger logger
-	
-	@setLogger: (logger) ->
+	@setLogger: (logger = DEFAULT_LOGCONFIG) ->
+		if typeof logger is 'string'
+			logger = require('./util/LogAutoConfigurer').findAndConfigureLogging logger
+		
 		if not logger? or typeof logger.getLevelConfig isnt 'function' or typeof logger.logMessage isnt 'function'
 			throw new Error 'Logger not usable'
 		
 		Logger = logger
 		return
 	
-	
-	do @initLogging
+	getLogger = =>
+		do @setLogger unless Logger?
+		Logger
 	
 	
 	
@@ -58,7 +58,9 @@ module.exports = class Log
 		# Expose logger name
 		defineProperty @, 'name', enumerable: yes, get: -> name
 		
-		levelConfig = Logger.getLevelConfig(nameParts) ? 0
+		logger = do getLogger
+		
+		levelConfig = logger.getLevelConfig nameParts
 		
 		# Define logger methods
 		for levelname, level of LogLevels then do (levelname, level) =>
@@ -67,7 +69,7 @@ module.exports = class Log
 			logfunc =
 				if granted then (msg, args...) ->
 					buildLogMessage msg, args, (logMessage) ->
-						Logger.logMessage
+						logger.logMessage
 							level: levelname
 							msg: logMessage
 							name: name
