@@ -17,7 +17,7 @@ suite 'Log init', ->
 	LogLevels = require '../util/LogLevels'
 	Log = _cnf = mocks = null
 	
-	allLevels = ( v for _, v of LogLevels ).reduce ((p, c) -> p | c), 0
+	allLevels = LogLevels.combine ( v for _, v of LogLevels )...
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -116,14 +116,19 @@ suite 'Log init', ->
 	test 'Logger set correctly and persistent in Logs', ->
 		logger1 = mkmock('getLevelConfig').takes(['abc']).returns(allLevels)
 		logger1.mock('getLevelConfig').takes(['xyz']).returns(allLevels)
-		logger1.logMessage = (obj) -> (@msgs ?= []).push obj.msg
+		logger1.logMessage = (obj) -> @msgs.push obj.msg
+		logger1.msgs = []
 		
 		logger2 = mkmock('getLevelConfig').takes(['test']).returns(allLevels)
 		logger2.logMessage = logger1.logMessage
+		logger2.msgs = []
 		
 		Log.setLogger logger1
 		log1 = new Log 'abc'
 		log1.debug 'My abc msg'
+		
+		logger1.msgs.should.eql ['My abc msg']
+		logger2.msgs.should.eql []
 		
 		(-> Log.setLogger {}).should.throwError 'Logger not usable'
 		log2 = new Log 'xyz'
@@ -146,7 +151,7 @@ suite 'Log constructor and logging', ->
 	LogLevels = require '../util/LogLevels'
 	Log = logger = mocks = null
 	
-	allLevels = ( v for _, v of LogLevels ).reduce ((p, c) -> p | c), 0
+	allLevels = LogLevels.combine ( v for _, v of LogLevels )...
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -179,19 +184,6 @@ suite 'Log constructor and logging', ->
 	
 	levelConfig = (parts, result = allLevels) ->
 		logger.mock('getLevelConfig').takes(parts).returns(result)
-	
-	cnfLogger = (loggerspec = {}) ->
-		cnf = loggerspec.getLevelConfig ? {}
-		logger = mkmock('getLevelConfig').takes(cnf.args ? ['abc', 'xyz']).returns (
-			if cnf.result? then cnf.result.map((x) -> LogLevels[x])
-			else ( v for _, v of LogLevels )
-		).reduce ((p, c) -> p | c), 0
-		
-		cnf = loggerspec.logMessage ? {}
-		logger = logger.mock('logMessage')
-		logger = logger.takes(cnf.args) if cnf.args?
-		
-		_cnf.mock('findAndConfigureLogging').takes(loggerspec.conf ? 'logconf.json').returns(logger)
 	
 	
 	test 'Log name', ->
@@ -235,9 +227,9 @@ suite 'Log constructor and logging', ->
 			cnt.should.equal 1
 	
 	test "Only allowed logging", ->
-		levelConfig ['abc', 'xyz'], LogLevels.Debug | LogLevels.Warn
-		logger.mock('logMessage').takes(level: 'Debug')
-		logger.mock('logMessage').takes(level: 'Warn')
+		levelConfig ['abc', 'xyz'], LogLevels.combineLevels 'Debug', 'Warn'
+		logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug)
+		logger.mock('logMessage').takes(level: 'Warn', numLevel: LogLevels.Warn)
 		
 		log = new Log 'abc.xyz'
 		for lvl of LogLevels
@@ -253,22 +245,22 @@ suite 'Log constructor and logging', ->
 	for logcallresult, logcallparams of logcall
 		test "Log call with #{logcallparams}", ->
 			levelConfig ['abc', 'xyz']
-			logger.mock('logMessage').takes(level: 'Debug', msg: logcallresult)
+			logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug, msg: logcallresult)
 			
 			log = new Log 'abc.xyz'
 			log.debug.apply log, logcallparams
 	
 	test "Log call with function result", ->
 		levelConfig ['abc', 'xyz']
-		logger.mock('logMessage').takes(level: 'Debug', msg: 'Function result {}')
+		logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug, msg: 'Function result {}')
 		
 		log = new Log 'abc.xyz'
 		log.debug(( -> 'Function result {}' ), 14)
 	
 	test "Log call with asynchronous function result", (done) ->
 		levelConfig ['abc', 'xyz']
-		logger.mock('logMessage').takes(level: 'Debug', msg: 'Asynchronous function result')
-		logger.mock('logMessage').takes(level: 'Debug', msg: 'Second asynchronous function result')
+		logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug, msg: 'Asynchronous function result')
+		logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug, msg: 'Second asynchronous function result')
 		
 		log = new Log 'abc.xyz'
 		log.debug (logdone) ->

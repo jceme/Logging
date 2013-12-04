@@ -64,9 +64,9 @@ module.exports =
 		
 		loggers = loggers.filter (x) -> x
 		
-		if loggers.length > 1
-			TeePseudoLogger = require '../loggers/TeePseudoLogger'
-			new TeePseudoLogger loggers
+		if loggers.length is 1
+			loggers[0]
 		
 		else
-			loggers[0]
+			TeePseudoLogger = require '../loggers/TeePseudoLogger'
+			new TeePseudoLogger loggers

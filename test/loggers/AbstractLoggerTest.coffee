@@ -17,7 +17,7 @@ suite 'AbstractLogger.constructor', ->
 	
 	AbstractLogger = LogLevels = null
 	
-	cmb = (lvls) -> lvls.split(/\s+/).map((x) -> LogLevels[x]).reduce ((p, c) -> p | c), 0
+	cmb = (lvls) -> LogLevels.combineLevels lvls.split(/\s+/)...
 	
 	setup ->
 		AbstractLogger = require "../../loggers/AbstractLogger"
@@ -124,8 +124,6 @@ suite 'AbstractLogger.getLevelConfig', ->
 	
 	AbstractLogger = LogLevels = null
 	
-	cmb = (lvls) -> lvls.split(/\s+/).map((x) -> LogLevels[x]).reduce ((p, c) -> p | c), 0
-	
 	setup ->
 		AbstractLogger = require "../../loggers/AbstractLogger"
 		LogLevels = require "../../util/LogLevels"
@@ -133,7 +131,7 @@ suite 'AbstractLogger.getLevelConfig', ->
 	
 	testLevelConfig = (returnValue, parts..., levels) -> 
 		assert.ok L = new AbstractLogger levels: levels
-		assert.equal L.getLevelConfig(parts), cmb returnValue
+		assert.equal L.getLevelConfig(parts), LogLevels.combineLevels returnValue.split(/\s+/)...
 	
 	
 	test 'Single part no match', -> testLevelConfig 'Error Fatal', 'foo', 'bar', '': 'ERROR', 'abc.test': 'INFO'

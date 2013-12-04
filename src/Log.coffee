@@ -64,13 +64,14 @@ module.exports = class Log
 		
 		# Define logger methods
 		for levelname, level of LogLevels then do (levelname, level) =>
-			granted = !!(levelConfig & level)
+			granted = !!LogLevels.isset(levelConfig, level)
 			
 			logfunc =
 				if granted then (msg, args...) ->
 					buildLogMessage msg, args, (logMessage) ->
 						logger.logMessage
 							level: levelname
+							numLevel: level
 							msg: logMessage
 							name: name
 							parts: nameParts

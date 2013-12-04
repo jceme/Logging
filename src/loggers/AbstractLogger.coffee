@@ -2,9 +2,11 @@ module.exports = class AbstractLogger
 
 	'use strict'
 	
+	_LogLevels = require '../util/LogLevels'
+	
 	LogLevels = do ->
 		l = {}
-		l[do n.toLowerCase] = v for n, v of require '../util/LogLevels'
+		l[do n.toLowerCase] = v for n, v of _LogLevels
 		l
 	
 	SortedLogLevels = (n: n, v: v for n, v of LogLevels).sort((a, b) -> a.v - b.v).map((a) -> a.n)
@@ -48,10 +50,7 @@ module.exports = class AbstractLogger
 			else
 				n = [].map.call(lvl, (x) -> do x.toLowerCase).filter((x) -> x of LogLevels)
 			
-			levelset[do name.trim] = n
-			.map((x) -> LogLevels[x])
-			.filter((x) -> min <= x <= max)
-			.reduce ((p, c) -> p | c), 0
+			levelset[do name.trim] = _LogLevels.combine n.map((x) -> LogLevels[x]).filter((x) -> min <= x <= max)...
 		
 		levelset
 	
