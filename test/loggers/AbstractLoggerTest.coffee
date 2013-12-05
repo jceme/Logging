@@ -131,7 +131,7 @@ suite 'AbstractLogger.getLevelConfig', ->
 	
 	testLevelConfig = (returnValue, parts..., levels) -> 
 		assert.ok L = new AbstractLogger levels: levels
-		assert.equal L.getLevelConfig(parts), LogLevels.combineLevels returnValue.split(/\s+/)...
+		L.getLevelConfig(parts).should.eql mask: LogLevels.combineLevels returnValue.split(/\s+/)...
 	
 	
 	test 'Single part no match', -> testLevelConfig 'Error Fatal', 'foo', 'bar', '': 'ERROR', 'abc.test': 'INFO'

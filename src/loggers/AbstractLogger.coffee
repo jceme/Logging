@@ -71,11 +71,11 @@ module.exports = class AbstractLogger
 	
 	getLevelConfig: (parts) ->
 		len = parts.length
+		lvlcfg = @levelConfig
 		while len >= 0
 			testname = parts.slice(0, len--).join '.'
-			levelset = @levelConfig[testname]
 			
-			return levelset if levelset?
+			if testname of lvlcfg then return mask: lvlcfg[testname]
 		
 		throw new Error 'Invalid internal level config'
 	

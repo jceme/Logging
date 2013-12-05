@@ -49,7 +49,7 @@ suite 'Log init', ->
 		return
 	
 	test 'Simple init auto config', ->
-		logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(allLevels)
+		logger = mkmock('getLevelConfig').takes(['abc', 'xyz']).returns(mask: allLevels)
 		logger.mock('logMessage').fail()
 		_cnf.mock('findAndConfigureLogging').takes('logconf.json').returns(logger)
 		
@@ -114,12 +114,12 @@ suite 'Log init', ->
 		Log.setLogger logger4
 	
 	test 'Logger set correctly and persistent in Logs', ->
-		logger1 = mkmock('getLevelConfig').takes(['abc']).returns(allLevels)
-		logger1.mock('getLevelConfig').takes(['xyz']).returns(allLevels)
+		logger1 = mkmock('getLevelConfig').takes(['abc']).returns(mask: allLevels)
+		logger1.mock('getLevelConfig').takes(['xyz']).returns(mask: allLevels)
 		logger1.logMessage = (obj) -> @msgs.push obj.msg
 		logger1.msgs = []
 		
-		logger2 = mkmock('getLevelConfig').takes(['test']).returns(allLevels)
+		logger2 = mkmock('getLevelConfig').takes(['test']).returns(mask: allLevels)
 		logger2.logMessage = logger1.logMessage
 		logger2.msgs = []
 		
@@ -182,7 +182,7 @@ suite 'Log constructor and logging', ->
 		do mockery.resetCache
 	
 	
-	levelConfig = (parts, result = allLevels) ->
+	levelConfig = (parts, result = mask: allLevels) ->
 		logger.mock('getLevelConfig').takes(parts).returns(result)
 	
 	
@@ -208,7 +208,7 @@ suite 'Log constructor and logging', ->
 	loglevels.forEach (level) ->
 		test "Sole #{level} logging", ->
 			cnt = 0
-			levelConfig ['abc', 'xyz'], LogLevels[level]
+			levelConfig ['abc', 'xyz'], mask: LogLevels[level]
 			logger.logMessage = (obj) ->
 				arguments.length.should.equal 1
 				obj.should.have.property 'level', level
@@ -227,13 +227,13 @@ suite 'Log constructor and logging', ->
 			cnt.should.equal 1
 	
 	test "Only allowed logging", ->
-		levelConfig ['abc', 'xyz'], LogLevels.combineLevels 'Debug', 'Warn'
-		logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug)
-		logger.mock('logMessage').takes(level: 'Warn', numLevel: LogLevels.Warn)
+		levelConfig ['abc', 'xyz'], extra: ['foo', 15], mask: LogLevels.combineLevels 'Debug', 'Warn'
+		logger.mock('logMessage').takes(level: 'Debug', numLevel: LogLevels.Debug, extra: ['foo', 15])
+		logger.mock('logMessage').takes(level: 'Warn', numLevel: LogLevels.Warn, extra: ['foo', 15])
 		
 		log = new Log 'abc.xyz'
 		for lvl of LogLevels
-			log["is#{lvl}"]().should.equal(lvl in ['Debug', 'Warn'])
+			log["is#{lvl}"]().should.equal !!(lvl in ['Debug', 'Warn'])
 			log[lvl.toLowerCase()] 'My test message'
 	
 	logcall =

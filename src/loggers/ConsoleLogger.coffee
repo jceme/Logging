@@ -8,19 +8,17 @@ module.exports = do ->
 			super
 			_console = opts.console ? console
 			
-			@outputs = outputs =
-				Fatal: (_console.error or _console.log).bind _console
-				Warn:  (_console.warn  or _console.log).bind _console
-				Info:  (_console.info  or _console.log).bind _console
-				Debug: (_console.debug or _console.log).bind _console
+			fn = (fnname) -> (_console[fnname] or _console.log).bind _console
 			
-			outputs.Error = outputs.Fatal
-			outputs.Trace = outputs.Debug
+			outputs =
+				Fatal: f = fn 'error'
+				Error: f
+				Warn:  fn 'warn'
+				Info:  fn 'info'
+				Debug: f = fn 'debug'
+				Trace: f
 		
-		
-		logMessage: (obj) ->
-			log = @outputs[obj.level] ? @outputs.Info
-			log @formatLogMessage obj
+			@logMessage = (obj) -> outputs[obj.level] @formatLogMessage obj
 		
 		
 		toString: -> 'ConsoleLogger'

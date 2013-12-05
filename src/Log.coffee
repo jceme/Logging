@@ -60,11 +60,11 @@ module.exports = class Log
 		
 		logger = do getLogger
 		
-		levelConfig = logger.getLevelConfig nameParts
+		{ mask, extra } = logger.getLevelConfig nameParts
 		
 		# Define logger methods
 		for levelname, level of LogLevels then do (levelname, level) =>
-			granted = !!LogLevels.isset(levelConfig, level)
+			granted = !!LogLevels.isset(mask, level)
 			
 			logfunc =
 				if granted then (msg, args...) ->
@@ -75,6 +75,7 @@ module.exports = class Log
 							msg: logMessage
 							name: name
 							parts: nameParts
+							extra: extra
 							date: new Date()
 				
 				else -> return
