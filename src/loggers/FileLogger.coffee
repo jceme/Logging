@@ -23,11 +23,12 @@ module.exports = do ->
 		constructor: (opts = {}) ->
 			super
 			
-			filename    = opts.file or opts.filename or 'logging.log'
-			openFlags   = opts.openFlags or opts.flags or (if opts.overwrite ? not(opts.append ? yes) then 'w' else 'a')
+			filename    = opts.filename or opts.fileName or opts.file or 'logging.log'
+			basedir     = opts.basedir or opts.baseDir or opts.dir or '.'
+			openFlags   = opts.flags or (if opts.overwrite ? not(opts.append ? yes) then 'w' else 'a')
 			openMode    = opts.mode ? 0o644
 			throwErrors = opts.throwErrors ? no
-			filepath = path.resolve filename
+			filepath = path.resolve basedir, filename
 			
 			fd = cache[filepath] ?= fs.openSync filepath, openFlags, openMode
 			

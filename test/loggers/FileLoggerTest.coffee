@@ -50,7 +50,7 @@ suite 'FileLogger methods', ->
 	
 	
 	test 'No opts', ->
-		_path.mock('resolve').takes('logging.log').returns('/foo/bar/logging.log')
+		_path.mock('resolve').takes('.', 'logging.log').returns('/foo/bar/logging.log')
 		_fs.mock('openSync').takes('/foo/bar/logging.log', 'a', 0o644).returns(82)
 		
 		assert.ok L = new FileLogger()
@@ -59,33 +59,41 @@ suite 'FileLogger methods', ->
 		_fs.mock('closeSync').takes(82)
 	
 	test 'With file name, append, mode', ->
-		_path.mock('resolve').takes('log.log').returns('/foo/bar/log.log')
-		_fs.mock('openSync').takes('/foo/bar/log.log', 'w', 0o664).returns(7)
+		_path.mock('resolve').takes('.', 'foo.log').returns('/foo/bar/foo.log')
+		_fs.mock('openSync').takes('/foo/bar/foo.log', 'w', 0o664).returns(7)
 		
 		assert.ok L = new FileLogger file: 'log.log', filename: 'foo.log', append: no, mode: 0o664
 		
 		_fs.mock('closeSync').takes(7)
 	
-	test 'With file name, custom open flags', ->
-		_path.mock('resolve').takes('log.log').returns('/foo/bar/log.log')
-		_fs.mock('openSync').takes('/foo/bar/log.log', 'xyz', 0o644).returns(7)
+	test 'With no file name but base dir, overwrite, mode', ->
+		_path.mock('resolve').takes('/foo/bar', 'logging.log').returns('/foo/bar/log.log')
+		_fs.mock('openSync').takes('/foo/bar/log.log', 'w', 0o664).returns(7)
 		
-		assert.ok L = new FileLogger file: 'log.log', filename: 'foo.log', openFlags: 'xyz', flags: 'abc'
+		assert.ok L = new FileLogger basedir: '/foo/bar', overwrite: yes, mode: 0o664
+		
+		_fs.mock('closeSync').takes(7)
+	
+	test 'With file name, custom open flags', ->
+		_path.mock('resolve').takes('..', 'log.log').returns('/foo/bar/log.log')
+		_fs.mock('openSync').takes('/foo/bar/log.log', 'abc', 0o644).returns(7)
+		
+		assert.ok L = new FileLogger file: 'log.log', dir: '..', flags: 'abc'
 		
 		_fs.mock('closeSync').takes(7)
 	
 	test 'With file name, overwrite, cached', ->
-		_path.mock('resolve').takes('log.log').returns('/foo/bar/log.log').times(2)
+		_path.mock('resolve').takes('.', 'log.log').returns('/foo/bar/log.log').times(2)
 		_fs.mock('openSync').takes('/foo/bar/log.log', 'w', 0o644).returns(15).times(1)
 		
-		assert.ok L1 = new FileLogger file: 'log.log', filename: 'foo.log', overwrite: yes, append: yes
+		assert.ok L1 = new FileLogger file: 'log.log', overwrite: yes, append: yes
 		
-		assert.ok L2 = new FileLogger file: 'log.log', overwrite: no
+		assert.ok L2 = new FileLogger filename: 'log.log', overwrite: no
 		
 		_fs.mock('closeSync').takes(15)
 	
 	test 'Open fails', ->
-		_path.mock('resolve').takes('logging.log').returns('/foo/bar/logging.log')
+		_path.mock('resolve').takes('.', 'logging.log').returns('/foo/bar/logging.log')
 		_fs.openSync = (n, f, m) ->
 			arguments.length.should.equal 3
 			n.should.equal '/foo/bar/logging.log'
@@ -96,8 +104,8 @@ suite 'FileLogger methods', ->
 		(-> new FileLogger()).should.throwError 'Cannot open file: /foo/bar/logging.log'
 	
 	test 'Close fails', ->
-		_path.mock('resolve').takes('logging.log').returns('/foo/bar/logging.log')
-		_path.mock('resolve').takes('foo.log').returns('/foo/bar/foo.log')
+		_path.mock('resolve').takes('.', 'logging.log').returns('/foo/bar/logging.log')
+		_path.mock('resolve').takes('.', 'foo.log').returns('/foo/bar/foo.log')
 		_fs.mock('openSync').takes('/foo/bar/logging.log', 'a', 0o644).returns(51)
 		_fs.mock('openSync').takes('/foo/bar/foo.log', 'a', 0o644).returns(69)
 		
@@ -125,7 +133,7 @@ suite 'FileLogger methods', ->
 		delete _fs.closeSync
 	
 	test 'Logging', ->
-		_path.mock('resolve').takes('foo.log').returns('/foo/bar/foo.log')
+		_path.mock('resolve').takes('.', 'foo.log').returns('/foo/bar/foo.log')
 		_fs.mock('openSync').takes('/foo/bar/foo.log', 'a', 0o644).returns(82)
 		
 		assert.ok L = new FileLogger file: 'foo.log'
@@ -142,7 +150,7 @@ suite 'FileLogger methods', ->
 		_fs.mock('closeSync').takes(82)
 	
 	test 'Logging fails writing', ->
-		_path.mock('resolve').takes('foo.log').returns('/foo/bar/foo.log')
+		_path.mock('resolve').takes('.', 'foo.log').returns('/foo/bar/foo.log')
 		_fs.mock('openSync').takes('/foo/bar/foo.log', 'a', 0o644).returns(82)
 		
 		assert.ok L = new FileLogger file: 'foo.log', throwErrors: yes
@@ -161,7 +169,7 @@ suite 'FileLogger methods', ->
 		_fs.mock('closeSync').takes(82)
 	
 	test 'Logging fails writing silent', ->
-		_path.mock('resolve').takes('foo.log').returns('/foo/bar/foo.log')
+		_path.mock('resolve').takes('.', 'foo.log').returns('/foo/bar/foo.log')
 		_fs.mock('openSync').takes('/foo/bar/foo.log', 'a', 0o644).returns(82)
 		
 		assert.ok L = new FileLogger file: 'foo.log'
