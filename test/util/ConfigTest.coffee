@@ -36,6 +36,21 @@ suite 'Config methods', ->
 		x.should.not.have.property 'b'
 		y.should.eql a: 16, b: 'foo'
 	
+	test 'extend', ->
+		Config.extend().should.be.ok
+		Config.extend({foo: 'bar', abc: 25}).should.eql {foo: 'bar', abc: 25}
+		Config.extend({foo: 'bar'}, {}).should.eql {foo: 'bar'}
+		Config.extend({foo: 'bar'}, {abc: 25}).should.eql {foo: 'bar', abc: 25}
+		Config.extend({foo: 'bar'}, {abc: 25}, {'': 'LOL'}).should.eql {foo: 'bar', abc: 25, '': 'LOL'}
+		
+		Config.extend({foo: 'bar', abc: 17}, {abc: 25, xyz: 99}).should.eql {foo: 'bar', abc: 25, xyz: 99}
+		
+		obj = foo: 'bar'
+		x = Config.extend obj
+		x.should.not.equal.obj
+		x.should.eql foo: 'bar'
+		obj.should.eql foo: 'bar'
+	
 	test 'getOption and removeOption', ->
 		c = new Config foo: 'bar', bar: 2, test: -> 18
 		assert.equal c.getOption('noexist'), null
@@ -44,6 +59,7 @@ suite 'Config methods', ->
 		(c.getOption('test'))().should.equal 18
 		c.getOption('foo', 'bar').should.equal 'bar'
 		c.getOption('noexist', 'foo', 'bar').should.equal 'bar'
+		c.getOptionWithKey('noexist', 'foo', 'bar').should.eql key: 'foo', value: 'bar'
 		
 		c.removeOption 'foo'
 		assert.equal c.getOption('foo'), null, 'Option foo not removed'

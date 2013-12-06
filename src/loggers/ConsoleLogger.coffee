@@ -5,9 +5,8 @@ module.exports = do ->
 
 	class ConsoleLogger extends require('./AbstractLogger')
 		
-		constructor: (opts = {}) ->
+		constructor: (config, _console = console) ->
 			super
-			_console = opts.console ? console
 			
 			fn = (fnname) -> (_console[fnname] or _console.log).bind _console
 			

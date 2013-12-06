@@ -15,17 +15,18 @@ suite 'AbstractLogger: Sanity checks', ->
 
 suite 'AbstractLogger.constructor', ->
 	
-	AbstractLogger = LogLevels = null
+	AbstractLogger = Config = LogLevels = null
 	
 	cmb = (lvls) -> LogLevels.combineLevels lvls.split(/\s+/)...
 	
 	setup ->
 		AbstractLogger = require "../../loggers/AbstractLogger"
 		LogLevels = require "../../util/LogLevels"
+		Config = require "../../util/Config"
 	
 	
 	test 'No args', ->
-		assert.ok L = new AbstractLogger()
+		assert.ok L = new AbstractLogger new Config()
 		L.levelConfig.should.eql '': cmb 'Info Warn Error Fatal'
 		L.formatPattern.should.be.type('string')
 		L.formatPattern.should.be.ok
@@ -35,7 +36,7 @@ suite 'AbstractLogger.constructor', ->
 			act = {}
 			act[name] = { 'foo': 'Trace', 'foo.bar': 'error', 'abc': ['DEBUG', 'waRN'] }
 			
-			assert.ok L = new AbstractLogger act
+			assert.ok L = new AbstractLogger new Config act
 			L.levelConfig.should.eql
 				'': cmb 'Info Warn Error Fatal'
 				'foo': cmb 'Trace Debug Info Warn Error Fatal'
@@ -43,39 +44,45 @@ suite 'AbstractLogger.constructor', ->
 				'abc': cmb 'Debug Warn'
 	
 	test 'With default level', ->
-		assert.ok L = new AbstractLogger levels: { '': 'Trace', 'foo.bar': 'error' }
+		assert.ok L = new AbstractLogger new Config levels: { '': 'Trace', 'foo.bar': 'error' }
 		L.levelConfig.should.eql
 			'': cmb 'Trace Debug Info Warn Error Fatal'
 			'foo.bar': cmb 'Error Fatal'
 	
 	test 'With garbage in level list', ->
-		assert.ok L = new AbstractLogger levels: { '': 'Trace', 'foo.bar': ['error', 'notexistinglevel', 'DEBUG'] }
+		assert.ok L = new AbstractLogger new Config levels: { '': 'Trace', 'foo.bar': ['error', 'notexistinglevel', 'DEBUG'] }
 		L.levelConfig.should.eql
 			'': cmb 'Trace Debug Info Warn Error Fatal'
 			'foo.bar': cmb 'Error Debug'
 	
 	test 'With garbage as level', ->
-		assert.ok L = new AbstractLogger levels: { '': 'Trace', 'foo.bar': 'notexistinglevel' }
+		assert.ok L = new AbstractLogger new Config levels: { '': 'Trace', 'foo.bar': 'notexistinglevel' }
 		L.levelConfig.should.eql
 			'': cmb 'Trace Debug Info Warn Error Fatal'
 		L.levelConfig.should.not.have.property 'foo.bar'
 	
 	test 'With special level OFF', ->
-		assert.ok L = new AbstractLogger levels: { '': 'Trace', 'foo.bar': 'OFF', 'test': 'off' }
+		assert.ok L = new AbstractLogger new Config levels: { '': 'Trace', 'foo.bar': 'OFF', 'test': 'off' }
 		L.levelConfig.should.eql
 			'': cmb 'Trace Debug Info Warn Error Fatal'
 			'foo.bar': 0
 			'test': 0
 	
 	test 'With special level ALL', ->
-		assert.ok L = new AbstractLogger levels: { '': 'Trace', 'foo.bar': 'ALL', 'test': 'all' }
+		assert.ok L = new AbstractLogger new Config levels: { '': 'Trace', 'foo.bar': 'ALL', 'test': 'all' }
 		L.levelConfig.should.eql
 			'': cmb 'Trace Debug Info Warn Error Fatal'
 			'foo.bar': cmb 'Trace Debug Info Warn Error Fatal'
 			'test': cmb 'Trace Debug Info Warn Error Fatal'
 	
+	test 'Override global config', ->
+		config1 = new Config levels: { '': 'WARN' }
+		assert.ok L = new AbstractLogger new Config { level: { '': 'DEBUG' } }, config1
+		L.levelConfig.should.eql
+			'': cmb 'Debug Info Warn Error Fatal'
+	
 	test 'With min', ->
-		assert.ok L = new AbstractLogger min: 'INFO', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'INFO', 'bar': ['FATAL', 'DEBUG', 'INFO'] }
+		assert.ok L = new AbstractLogger new Config min: 'INFO', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'INFO', 'bar': ['FATAL', 'DEBUG', 'INFO'] }
 		L.levelConfig.should.eql
 			'': cmb 'Info Warn Error Fatal'
 			'foo.bar': cmb 'Error Fatal'
@@ -83,7 +90,7 @@ suite 'AbstractLogger.constructor', ->
 			'bar': cmb 'Info Fatal'
 	
 	test 'With max', ->
-		assert.ok L = new AbstractLogger max: 'info', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'INFO', 'bar': ['WARN', 'DEBUG', 'INFO'] }
+		assert.ok L = new AbstractLogger new Config max: 'info', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'INFO', 'bar': ['WARN', 'DEBUG', 'INFO'] }
 		L.levelConfig.should.eql
 			'': cmb 'Trace Debug Info'
 			'foo.bar': 0
@@ -91,7 +98,8 @@ suite 'AbstractLogger.constructor', ->
 			'bar': cmb 'Debug Info'
 	
 	test 'With min and max', ->
-		assert.ok L = new AbstractLogger min: 'Debug', max: 'WARN', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'Info', 'bar': ['DEBUG', 'FATAL', 'INFO', 'Trace'] }
+		config1 = new Config min: 'Debug'
+		assert.ok L = new AbstractLogger new Config { max: 'WARN', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'Info', 'bar': ['DEBUG', 'FATAL', 'INFO', 'Trace'] } }, config1
 		L.levelConfig.should.eql
 			'': cmb 'Debug Info Warn'
 			'foo.bar': 0
@@ -99,7 +107,8 @@ suite 'AbstractLogger.constructor', ->
 			'bar': cmb 'Debug Info'
 	
 	test 'With min and max having min > max', ->
-		assert.ok L = new AbstractLogger min: 'Warn', max: 'DEBUG', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'Info', 'bar': ['DEBUG', 'FATAL', 'INFO', 'Trace'] }
+		config1 = new Config min: 'Warn'
+		assert.ok L = new AbstractLogger new Config { max: 'DEBUG', levels: { '': 'ALL', 'foo.bar': 'ERROR', 'test': 'Info', 'bar': ['DEBUG', 'FATAL', 'INFO', 'Trace'] } }, config1
 		L.levelConfig.should.eql
 			'': cmb 'Debug Info Warn'
 			'foo.bar': 0
@@ -111,26 +120,27 @@ suite 'AbstractLogger.constructor', ->
 			act = {}
 			act[name] = "[#{name}] %Y"
 			
-			assert.ok L = new AbstractLogger act
+			assert.ok L = new AbstractLogger new Config act
 			L.formatPattern.should.equal "[#{name}] %Y"
 	
 	test 'Special log formats', ->
-		assert.ok L = new AbstractLogger formatPattern: '_%{DATE}-%{GARBAGE}_%{}-%{_%}-%Y_%{NOT ALLOWED}-%{DATETIME}_%{TIME}%{DATETIME_ISO8601}'
+		assert.ok L = new AbstractLogger new Config formatPattern: '_%{DATE}-%{GARBAGE}_%{}-%{_%}-%Y_%{NOT ALLOWED}-%{DATETIME}_%{TIME}%{DATETIME_ISO8601}'
 		L.formatPattern.should.equal '_%Y-%M-%D-_-%{_%}-%Y_%{NOT ALLOWED}-%Y-%M-%D %H:%i:%s.%S_%H:%i:%s.%S%Y-%M-%DT%H:%i:%s.%S'
 	
 
 
 suite 'AbstractLogger.getLevelConfig', ->
 	
-	AbstractLogger = LogLevels = null
+	AbstractLogger = Config = LogLevels = null
 	
 	setup ->
 		AbstractLogger = require "../../loggers/AbstractLogger"
 		LogLevels = require "../../util/LogLevels"
+		Config = require "../../util/Config"
 	
 	
 	testLevelConfig = (returnValue, parts..., levels) -> 
-		assert.ok L = new AbstractLogger levels: levels
+		assert.ok L = new AbstractLogger new Config levels: levels
 		L.getLevelConfig(parts).should.eql mask: LogLevels.combineLevels returnValue.split(/\s+/)...
 	
 	
@@ -143,7 +153,7 @@ suite 'AbstractLogger.getLevelConfig', ->
 	test 'Single part over-match', -> testLevelConfig 'Info Warn Error Fatal', 'foo', 'bar', '': 'ERROR', 'foo': 'INFO'
 	
 	test 'Invalid internal level config', ->
-		assert.ok L = new AbstractLogger()
+		assert.ok L = new AbstractLogger new Config()
 		assert.ok L.levelConfig
 		L.levelConfig = {}
 		
@@ -153,13 +163,15 @@ suite 'AbstractLogger.getLevelConfig', ->
 
 suite 'AbstractLogger.logMessage', ->
 	
-	AbstractLogger = null
+	AbstractLogger = Config = null
 	
-	setup -> AbstractLogger = require "../../loggers/AbstractLogger"
+	setup ->
+		AbstractLogger = require "../../loggers/AbstractLogger"
+		Config = require '../../util/Config'
 	
 	
 	testLogMessage = (fmt, result) -> 
-		assert.ok L = new AbstractLogger formatPattern: fmt, levels: { '': 'ALL' }
+		assert.ok L = new AbstractLogger new Config formatPattern: fmt, levels: { '': 'ALL' }
 		firstcall = yes
 		L.log = (msg) ->
 			assert.ok firstcall

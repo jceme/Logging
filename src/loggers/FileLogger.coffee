@@ -8,6 +8,18 @@ module.exports = do ->
 		fs = require 'fs'
 		path = require 'path'
 		
+		KEYS_FILENAME = [
+			'filename'
+			'fileName'
+			'file'
+		]
+		
+		KEYS_BASEDIR = [
+			'basedir'
+			'baseDir'
+			'dir'
+		]
+		
 		
 		cache = {}
 		
@@ -21,14 +33,16 @@ module.exports = do ->
 		
 		
 		
-		constructor: (opts = {}) ->
+		constructor: (config) ->
 			super
 			
-			@filename    = opts.filename or opts.fileName or opts.file or 'logging.log'
-			basedir      = opts.basedir or opts.baseDir or opts.dir or '.'
-			openFlags    = opts.flags or (if opts.overwrite ? not(opts.append ? yes) then 'w' else 'a')
-			openMode     = opts.mode ? 0o644
-			@throwErrors = opts.throwErrors ? no
+			@filename    = config.getOption(KEYS_FILENAME...) or 'logging.log'
+			basedir      = config.getOption(KEYS_BASEDIR...) or '.'
+			openMode     = config.getOption('mode') ? 0o644
+			@throwErrors = config.getOption('throwErrors') ? no
+			
+			{key, value} = config.getOptionWithKey('flags', 'overwrite', 'append') ? { key: 'append', value: yes }
+			openFlags    = if key is 'flags' then value else if (key is 'overwrite' and value) or (key is 'append' and not value) then 'w' else 'a'
 			
 			filepath = path.resolve basedir, @filename
 			

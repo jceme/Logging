@@ -3,6 +3,7 @@ module.exports = class AbstractLogger
 	'use strict'
 	
 	_LogLevels = require '../util/LogLevels'
+	Config = require '../util/Config'
 	
 	LogLevels = do ->
 		l = {}
@@ -16,14 +17,24 @@ module.exports = class AbstractLogger
 	
 	DEFAULT_FORMAT_PATTERN = '%{DATETIME} %L  %n: %m'
 	
+	KEYS_FORMAT_PATTERN = [
+		'formatPattern'
+		'format'
+		'pattern'
+	]
 	
-	parseLevelConfig = (opts) ->
+	KEYS_LEVELS = [
+		'levels'
+		'level'
+	]
+	
+	
+	parseLevelConfig = (config) ->
 		levelset = {}
-		levels = opts.levels ? opts.level ? {}
-		levels[''] ?= DEFAULT_LOG_LEVEL
+		levels = Config.extend { '': DEFAULT_LOG_LEVEL }, config.getOption(KEYS_LEVELS...) ? {}
 		
-		min = LogLevels[do opts.min?.toLowerCase] ? 0
-		max = LogLevels[do opts.max?.toLowerCase] ? Number.POSITIVE_INFINITY
+		min = LogLevels[config.getOption('min')?.toLowerCase()] ? 0
+		max = LogLevels[config.getOption('max')?.toLowerCase()] ? Number.POSITIVE_INFINITY
 		[max, min] = [min, max] if min > max
 		
 		for name, lvl of levels
@@ -55,18 +66,18 @@ module.exports = class AbstractLogger
 		levelset
 	
 	
-	constructor: (opts = {}) ->
-		@levelConfig = parseLevelConfig opts
+	
+	constructor: (config) ->
+		@levelConfig = parseLevelConfig config
 		
-		@formatPattern = (opts.formatPattern ? opts.format ? opts.pattern ? DEFAULT_FORMAT_PATTERN)
-		.replace /%\{(\w*)\}/g, (_, code) ->
+		@formatPattern = "#{config.getOption(KEYS_FORMAT_PATTERN...) ? DEFAULT_FORMAT_PATTERN}".replace /%\{(\w*)\}/g, (_, code) ->
 			switch do code.toUpperCase
 				when 'DATETIME'         then '%Y-%M-%D %H:%i:%s.%S'
 				when 'DATETIME_ISO8601' then '%Y-%M-%DT%H:%i:%s.%S'
 				when 'DATE'             then '%Y-%M-%D'
 				when 'TIME'             then '%H:%i:%s.%S'
 				else                         ''
-		
+	
 	
 	
 	getLevelConfig: (parts) ->
