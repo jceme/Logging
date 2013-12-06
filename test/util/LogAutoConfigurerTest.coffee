@@ -26,7 +26,7 @@ suite 'LogAutoConfigurer: Sanity checks', ->
 
 suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 	
-	LogAutoConfigurer = _fs = _path = mocks = null
+	LogAutoConfigurer = _fs = _path = Logger = mocks = null
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -44,6 +44,7 @@ suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 		mockery.registerMock 'path', _path = mkmock('__noop').fail()
 		mockery.registerAllowables [
 			'../../util/LogAutoConfigurer'
+			'./Config'
 			'RelaxedJsonParser'
 			'./PegjsJsonParser'
 		]
@@ -54,6 +55,14 @@ suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 		mocks = null
 		do mockery.deregisterAll
 		do mockery.resetCache
+		LogAutoConfigurer = _fs = _path = Logger = mocks = null
+	
+	setResolvable = (expectedType = '../loggers/ConsoleLogger', result = yes, times = 1) ->
+		if Logger?
+			Logger.mock('_').takes(expectedType).returns(result).times(times)
+		else
+			Logger = mkmock('_').takes(expectedType).returns(result).times(times)
+			LogAutoConfigurer.isResolvableType = Logger._
 	
 	
 	test 'File is null', ->
@@ -70,7 +79,10 @@ suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 		_fs.mock('existsSync').takes('/foo/foo.log').returns(yes)
 		_fs.mock('statSync').takes('/foo/foo.log').returns mkmock('isFile').returns(yes)
 		_fs.mock('readFileSync').takes('/foo/foo.log').returns '{ loggers: [{ "moo": 29 }] }'
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(moo: 29, levels: {}).returns(logger)._
+		mockery.registerMock '../loggers/ConsoleLogger', (config) ->
+			config.getOption('moo').should.equal 29
+			logger
+		setResolvable()
 		
 		LogAutoConfigurer.findAndConfigureLogging('foo.log').should.equal logger
 	
@@ -78,16 +90,21 @@ suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 		logger = {}
 		_fs.mock('existsSync').takes('/bar/foo.log').returns(yes)
 		_fs.mock('statSync').takes('/bar/foo.log').returns mkmock('isFile').returns(yes)
-		_fs.mock('readFileSync').takes('/bar/foo.log').returns '{ loggers: [{ type: "MySpecialTestLogger", "moo": 81 }] }'
-		mockery.registerMock '../loggers/MySpecialTestLogger', mkmock('_').takes(moo: 81, levels: {}).returns(logger)._
+		_fs.mock('readFileSync').takes('/bar/foo.log').returns '{ loggers: { type: "MySpecialTestLogger", "moo": 81 } }'
+		mockery.registerMock 'MySpecialTestLogger', (config) ->
+			config.getOption('moo').should.equal 81
+			logger
+		setResolvable '../loggers/MySpecialTestLogger', no
+		setResolvable 'MySpecialTestLogger', yes
 		
 		LogAutoConfigurer.findAndConfigureLogging('/bar/foo.log').should.equal logger
 	
 	test 'File is absolute and not existing', ->
 		logger = {}
 		_fs.mock('existsSync').takes('/bar/foo.log').returns(no)
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: {}).returns(logger)._
-		
+		mockery.registerMock '../loggers/ConsoleLogger', (config) -> logger
+		setResolvable()
+
 		LogAutoConfigurer.findAndConfigureLogging('/bar/foo.log').should.equal logger
 	
 	test 'File is absolute and stats fail', ->
@@ -108,7 +125,8 @@ suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 		_path.mock('resolve').takes('.', 'foo.log').returns('/foo.log')
 		_path.mock('resolve').takes('./..', 'foo.log').returns('/foo.log')
 		_fs.mock('existsSync').takes('/foo.log').returns(no)
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: {}).returns(logger)._
+		mockery.registerMock '../loggers/ConsoleLogger', (config) -> logger
+		setResolvable()
 			
 		LogAutoConfigurer.findAndConfigureLogging('foo.log').should.equal logger
 
@@ -116,7 +134,7 @@ suite 'LogAutoConfigurer.findAndConfigureLogging', ->
 
 suite 'LogAutoConfigurer.createLoggers', ->
 	
-	LogAutoConfigurer = mocks = null
+	LogAutoConfigurer = Config = Logger = mocks = null
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -132,107 +150,117 @@ suite 'LogAutoConfigurer.createLoggers', ->
 		mocks = []
 		mockery.registerAllowables [
 			'../../util/LogAutoConfigurer'
+			'./Config'
+			'../../util/Config'
 		]
+		Config = require '../../util/Config'
 		LogAutoConfigurer = require '../../util/LogAutoConfigurer'
+		LogAutoConfigurer.isResolvableType = -> throw new Error 'Method must be replaced in test'
 	
 	teardown ->
 		do mock.assertThrows for mock in mocks
 		mocks = null
 		do mockery.deregisterAll
 		do mockery.resetCache
+		LogAutoConfigurer = Logger = mocks = null
+	
+	setResolvable = (expectedType = '../loggers/ConsoleLogger', result = yes, times = 1) ->
+		if Logger?
+			Logger.mock('_').takes(expectedType).returns(result).times(times)
+		else
+			Logger = mkmock('_').takes(expectedType).returns(result).times(times)
+			LogAutoConfigurer.isResolvableType = Logger._
 	
 	
 	test 'No spec', ->
 		logger = {}
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: {}).returns(logger)._
+		mockery.registerMock '../loggers/ConsoleLogger', (config) -> logger
+		setResolvable()
 		
-		LogAutoConfigurer.createLoggers().should.equal logger
+		LogAutoConfigurer.createLoggers(new Config()).should.equal logger
 	
 	test 'Single Private type logger', ->
 		logger = {}
-		mockery.registerMock 'my/test/PrivateLogger', mkmock('_').takes(levels: { 'abc': 'DEBUG' }).returns(logger)._
+		mockery.registerMock 'my/test/PrivateLogger', (config) ->
+			config.getOption('levels').should.eql { 'abc': 'DEBUG' }
+			logger
+		setResolvable('my/test/PrivateLogger')
 		
-		LogAutoConfigurer.createLoggers(loggers: { type: 'my/test/PrivateLogger' }, levels: { 'abc': 'DEBUG' }).should.equal logger
+		LogAutoConfigurer.createLoggers(new Config loggers: { type: 'my/test/PrivateLogger' }, levels: { 'abc': 'DEBUG' }).should.equal logger
 	
-	test 'Spec with garbage', ->
+	test 'Spec with global option', ->
 		logger = {}
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: {}).returns(logger)._
+		mockery.registerMock '../loggers/ConsoleLogger', (config) ->
+			config.getOption('foo').should.equal 'bar'
+			logger
+		setResolvable()
 		
-		LogAutoConfigurer.createLoggers(foo: 'bar').should.equal logger
+		LogAutoConfigurer.createLoggers(new Config foo: 'bar').should.equal logger
 	
 	test 'Spec is empty', ->
 		logger = {}
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: {}).returns(logger)._
+		mockery.registerMock '../loggers/ConsoleLogger', (config) -> logger
+		setResolvable()
 		
-		LogAutoConfigurer.createLoggers({}).should.equal logger
-	
-	for name in [ 'levels', 'level' ] then do (name) ->
-		test "Spec with sole #{name}", ->
-			logger = {}
-			act = {}
-			act[name] = { foo: 'bar' }
-			mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(levels: { foo: 'bar' }).returns(logger)._
-			
-			LogAutoConfigurer.createLoggers(act).should.equal logger
+		LogAutoConfigurer.createLoggers(new Config()).should.equal logger
 	
 	for name in [ 'loggers', 'logger', 'adapters', 'adapter' ] then do (name) ->
 		test "Spec with sole #{name}", ->
 			logger = {}
 			act = {}
-			act[name] = [{ foo: 'bar' }]
-			mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(foo: 'bar', levels: {}).returns(logger)._
+			act[name] = foo: 'bar'
+			mockery.registerMock '../loggers/ConsoleLogger', (config) ->
+				config.getOption('foo').should.equal 'bar'
+				logger
+			setResolvable()
 			
-			LogAutoConfigurer.createLoggers(act).should.equal logger
+			LogAutoConfigurer.createLoggers(new Config act).should.equal logger
 		
 		test "Spec with multiple sole #{name}", ->
 			[ l1, l2, l3, l4 ] = [ {}, {}, {}, {} ]
 			act = {}
 			act[name] = [{ foo: 'bar' }, { type: 'MySpecialTestType', bar: 'test' }, { type: 'foo/bar/MySpecialTestType', bar: 'foo' }]
-			mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(foo: 'bar', levels: {}).returns(l1)._
-			mockery.registerMock '../loggers/MySpecialTestType', mkmock('_').takes(bar: 'test', levels: {}).returns(l2)._
-			mockery.registerMock 'foo/bar/MySpecialTestType', mkmock('_').takes(bar: 'foo', levels: {}).returns(l3)._
+			mockery.registerMock '../loggers/ConsoleLogger', (config) ->
+				config.getOption('foo').should.equal 'bar'
+				l1
+			setResolvable()
+			#mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(foo: 'bar', levels: {}).returns(l1)._
+			mockery.registerMock '../loggers/MySpecialTestType', (config) ->
+				config.getOption('bar').should.equal 'test'
+				l2
+			setResolvable('../loggers/MySpecialTestType')
+			#mockery.registerMock '../loggers/MySpecialTestType', mkmock('_').takes(bar: 'test', levels: {}).returns(l2)._
+			mockery.registerMock 'foo/bar/MySpecialTestType', (config) ->
+				config.getOption('bar').should.equal 'foo'
+				l3
+			setResolvable('foo/bar/MySpecialTestType')
+			#mockery.registerMock 'foo/bar/MySpecialTestType', mkmock('_').takes(bar: 'foo', levels: {}).returns(l3)._
 			mockery.registerMock '../loggers/TeePseudoLogger', mkmock('_').takes([ l1, l2, l3 ]).returns(l4)._
 			
-			LogAutoConfigurer.createLoggers(act).should.equal l4
-	
-	for name in [ 'levels', 'level' ] then do (name) ->
-		test "Spec with custom logger config in #{name}", ->
-			logger = {}
-			act = {}
-			act[name] = { foo: 'bar' }
-			exp = {}
-			exp[name] = { foo: 'bar' }
-			mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(exp).returns(logger)._
-			
-			LogAutoConfigurer.createLoggers({ loggers: [ act ], levels: { foo: 'test' } }).should.equal logger
+			LogAutoConfigurer.createLoggers(new Config act).should.equal l4
 	
 	test 'Type not found', ->
-		mockery.registerAllowable '../loggers/NonExistingLoggerType'
+		setResolvable '../loggers/NonExistingLoggerType', no
+		setResolvable 'NonExistingLoggerType', no
+		setResolvable '../loggers/NonExistingLoggerTypeLogger', no
 		
-		(-> LogAutoConfigurer.createLoggers({ loggers: [type: 'NonExistingLoggerType'] })).should.throwError /NonExistingLoggerType/
-	
-	test 'Type not found after others', ->
-		logger = {}
-		mockery.registerAllowable '../loggers/NonExistingLoggerType'
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(foo: 4, levels: {}).returns(logger)._
-		
-		(-> LogAutoConfigurer.createLoggers({ loggers: [{foo: 4}, {type: 'NonExistingLoggerType'}, {bar: 9}] })).should.throwError /NonExistingLoggerType/
-	
-	test 'Type not found before others', ->
-		mockery.registerAllowable '../loggers/NonExistingLoggerType'
-		
-		(-> LogAutoConfigurer.createLoggers({ loggers: [{type: 'NonExistingLoggerType'}, {bar: 9}] })).should.throwError /NonExistingLoggerType/
+		(-> LogAutoConfigurer.createLoggers(new Config { loggers: [type: 'NonExistingLoggerType'] })).should.throwError /NonExistingLoggerType/
 	
 	test 'Type not found between others', ->
 		logger = {}
-		mockery.registerAllowable '../loggers/NonExistingLoggerType'
-		mockery.registerMock '../loggers/ConsoleLogger', mkmock('_').takes(foo: 4, levels: {}).returns(logger)._
+		mockery.registerMock '../loggers/ConsoleLogger', (config) ->
+			config.getOption('foo').should.equal 4
+			logger
+		setResolvable()
 		
-		(-> LogAutoConfigurer.createLoggers({ loggers: [{foo: 4}, {type: 'NonExistingLoggerType'}, {bar: 9}] })).should.throwError /NonExistingLoggerType/
+		setResolvable '../loggers/NonExistingLoggerType', no
+		setResolvable 'NonExistingLoggerType', no
+		setResolvable '../loggers/NonExistingLoggerTypeLogger', no
+		
+		(-> LogAutoConfigurer.createLoggers(new Config { loggers: [{foo: 4}, {type: 'NonExistingLoggerType'}, {bar: 9}] })).should.throwError /NonExistingLoggerType/
 	
 	test 'Logger creation fails', ->
-		mockery.registerMock '../loggers/ConsoleLogger', (opts) ->
-			opts.should.eql levels: {}
-			throw new Error 'Test error'
+		mockery.registerMock '../loggers/ConsoleLogger', (opts) -> throw new Error 'Test error'
+		setResolvable()
 		
-		(-> LogAutoConfigurer.createLoggers({})).should.throwError 'Test error'
+		(-> LogAutoConfigurer.createLoggers(new Config {})).should.throwError 'Test error'

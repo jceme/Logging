@@ -1,10 +1,12 @@
 require 'should'
 
-LogLevels = require '../../util/LogLevels'
-
-
 
 suite 'LogLevels methods', ->
+	
+	LogLevels = null
+	
+	setup -> LogLevels = require '../../util/LogLevels'
+	
 	
 	test 'Sanity checks', ->
 		v.should.be.type 'number' for v in ( v for _, v of LogLevels )

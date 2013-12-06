@@ -14,10 +14,8 @@ suite 'Log: Sanity checks', ->
 
 suite 'Log init', ->
 	
-	LogLevels = require '../util/LogLevels'
-	Log = _cnf = mocks = null
+	Log = LogLevels = allLevels = _cnf = mocks = null
 	
-	allLevels = LogLevels.combine ( v for _, v of LogLevels )...
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -25,7 +23,10 @@ suite 'Log init', ->
 		m
 	
 	
-	suiteSetup -> mockery.enable useCleanCache: yes
+	suiteSetup ->
+		LogLevels = require '../util/LogLevels'
+		allLevels = LogLevels.combine ( v for _, v of LogLevels )...
+		mockery.enable useCleanCache: yes
 	
 	suiteTeardown -> do mockery.disable
 	
@@ -148,10 +149,9 @@ suite 'Log init', ->
 
 suite 'Log constructor and logging', ->
 	
-	LogLevels = require '../util/LogLevels'
-	Log = logger = mocks = null
 	
-	allLevels = LogLevels.combine ( v for _, v of LogLevels )...
+	Log = LogLevels = allLevels = logger = mocks = null
+	
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -159,7 +159,10 @@ suite 'Log constructor and logging', ->
 		m
 	
 	
-	suiteSetup -> mockery.enable useCleanCache: yes
+	suiteSetup ->
+		LogLevels = require '../util/LogLevels'
+		allLevels = LogLevels.combine ( v for _, v of LogLevels )...
+		mockery.enable useCleanCache: yes
 	
 	suiteTeardown -> do mockery.disable
 	

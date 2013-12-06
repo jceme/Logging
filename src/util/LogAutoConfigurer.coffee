@@ -1,7 +1,16 @@
 
 'use strict'
 
+Config = require './Config'
+
 DEFAULT_TYPE = 'ConsoleLogger'
+
+KEYS_LOGGERS = [
+	'loggers'
+	'logger'
+	'adapters'
+	'adapter'
+]
 
 
 module.exports =
@@ -30,7 +39,7 @@ module.exports =
 				last = p
 				dir += '/..'
 		
-		do @createLoggers
+		@createLoggers new Config()
 	
 	
 	
@@ -42,29 +51,19 @@ module.exports =
 
 			content = do fs.readFileSync(filepath).toString
 			json = JsonParser.parse content
-			return @createLoggers json
+			return @createLoggers new Config json
 		
 		null
 	
 	
 	
-	createLoggers: (config = {}) ->
-		stdLevels = config.levels ? config.level ? {}
-		
-		loggers = config.loggers ? config.logger ? config.adapters ? config.adapter ? [ {} ]
-		
+	createLoggers: (config) ->
+		loggers = config.getOption(KEYS_LOGGERS...) ? [ {} ]
 		loggers = [ loggers ] unless loggers instanceof Array
 		
-		loggers = loggers.map (opts) ->
-			type = do "#{opts.type ? DEFAULT_TYPE}".trim
-			type = "../loggers/#{type}" if /^\w+$/.test type
-			
-			opts.levels = stdLevels if 'levels' not of opts and 'level' not of opts
-			
-			clazz = require type
-			new clazz opts
+		config.removeOption KEYS_LOGGERS...
 		
-		loggers = loggers.filter (x) -> x
+		loggers = loggers.map (opts) => @createLogger new Config opts, config
 		
 		if loggers.length is 1
 			loggers[0]
@@ -72,3 +71,34 @@ module.exports =
 		else
 			TeePseudoLogger = require '../loggers/TeePseudoLogger'
 			new TeePseudoLogger loggers
+	
+	
+	
+	createLogger: (config) ->
+		clazz = @resolveLoggerType config.getOption 'type'
+		new clazz config
+	
+	
+	
+	resolveLoggerType: (type = DEFAULT_TYPE) ->
+		type = do "#{type}".trim
+		
+		types = []
+		e = /^(\w+)(?:Adapter)?$/i.exec type
+		
+		types.push "../loggers/#{type}" if e
+		types.push type
+		types.push "../loggers/#{e[1]}Logger" if e
+		
+		return require T for T in types when @isResolvableType T
+		
+		throw new Error "Cannot resolve logger type: #{type}"
+	
+	
+	
+	isResolvableType: (type) ->
+		try
+			require.resolve type
+			yes
+		catch
+			no

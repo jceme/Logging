@@ -36,7 +36,6 @@ module.exports = class TeePseudoLogger
 				myobj.extra = X.extra
 				loggers[i].logMessage myobj
 				
-		#logger.logMessage obj for logger in @loggers; return
 		return
 	
 	

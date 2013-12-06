@@ -1,14 +1,10 @@
 require 'should'
 nodemock = require 'nodemock'
 
-LogLevels = require '../../util/LogLevels'
-TeePseudoLogger = require '../../loggers/TeePseudoLogger'
-
-
 
 suite 'TeePseudoLogger class', ->
 	
-	mocks = null
+	LogLevels = TeePseudoLogger = mocks = null
 	
 	mkmock = (fnname) ->
 		m = nodemock.mock fnname
@@ -17,6 +13,8 @@ suite 'TeePseudoLogger class', ->
 	
 	
 	setup ->
+		LogLevels = require '../../util/LogLevels'
+		TeePseudoLogger = require '../../loggers/TeePseudoLogger'
 		mocks = []
 	
 	teardown ->
