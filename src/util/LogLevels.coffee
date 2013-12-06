@@ -1,3 +1,6 @@
+
+'use strict'
+
 module.exports = levels =
 
 	Trace:   1

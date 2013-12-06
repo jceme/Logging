@@ -1,5 +1,6 @@
 module.exports = do ->
 
+	# XXX Directly export class with release of CoffeeScript v1.6.4
 	'use strict'
 
 	class ConsoleLogger extends require('./AbstractLogger')
@@ -10,7 +11,7 @@ module.exports = do ->
 			
 			fn = (fnname) -> (_console[fnname] or _console.log).bind _console
 			
-			outputs =
+			@outputs =
 				Fatal: f = fn 'error'
 				Error: f
 				Warn:  fn 'warn'
@@ -18,7 +19,7 @@ module.exports = do ->
 				Debug: f = fn 'debug'
 				Trace: f
 		
-			@logMessage = (obj) -> outputs[obj.level] @formatLogMessage obj
 		
+		logMessage: (obj) -> @outputs[obj.level] @formatLogMessage obj
 		
 		toString: -> 'ConsoleLogger'

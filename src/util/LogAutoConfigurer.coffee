@@ -1,4 +1,6 @@
 
+'use strict'
+
 DEFAULT_TYPE = 'ConsoleLogger'
 
 

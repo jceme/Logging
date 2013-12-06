@@ -80,7 +80,7 @@ module.exports = class Log
 				
 				else -> return
 			
-			defineProperty @, "is#{levelname}", configurable: yes, enumerable: no, writable: no, value: -> granted
+			defineProperty @, "is#{levelname}", configurable: yes, enumerable: no, writable: no, value: if granted then -> yes else -> no
 			defineProperty @, do levelname.toLowerCase, configurable: yes, enumerable: no, writable: no, value: logfunc
 	
 	
