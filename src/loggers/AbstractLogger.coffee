@@ -33,8 +33,8 @@ module.exports = class AbstractLogger
 		levelset = {}
 		levels = Config.extend { '': DEFAULT_LOG_LEVEL }, config.getOption(KEYS_LEVELS...) ? {}
 		
-		min = LogLevels[config.getOption('min')?.toLowerCase()] ? 0
-		max = LogLevels[config.getOption('max')?.toLowerCase()] ? Number.POSITIVE_INFINITY
+		min = LogLevels[config.getOption('minLevel', 'min')?.toLowerCase()] ? 0
+		max = LogLevels[config.getOption('maxLevel', 'max')?.toLowerCase()] ? Number.POSITIVE_INFINITY
 		[max, min] = [min, max] if min > max
 		
 		for name, lvl of levels
@@ -102,7 +102,7 @@ module.exports = class AbstractLogger
 		s
 	
 	formatLogMessage: (obj) ->
-		@formatPattern.replace /%(\d+)?(\w|%)/g, (_, cnt, optchar) ->
+		@formatPattern.replace /%(\d+)?([mnLDMYHisST%])/g, (_, cnt, optchar) ->
 			cnt = parseInt cnt, 10 if cnt?
 			switch optchar
 				when 'm' then obj.msg

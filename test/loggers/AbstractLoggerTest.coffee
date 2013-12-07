@@ -189,7 +189,7 @@ suite 'AbstractLogger.logMessage', ->
 	
 	test 'No format flags', -> testLogMessage 'Foo', 'Foo'
 	
-	test 'Invalid format flag', -> testLogMessage 'Foo %Q bar %090Q abc % %-Y test', 'Foo  bar  abc % %-Y test'
+	test 'Invalid format flag', -> testLogMessage 'Foo %Q bar %090Q abc % %-Y test', 'Foo %Q bar %090Q abc % %-Y test'
 	
 	test 'With format flags', ->
 		testLogMessage(
