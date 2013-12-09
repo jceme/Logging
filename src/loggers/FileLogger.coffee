@@ -28,6 +28,19 @@ module.exports = do ->
 			cache = {}
 			return
 		
+		@_maskMode: (mode) -> mode & (~process.umask())
+		
+		@_getModes: (openMode) =>
+			if openMode?
+				# Set execute flag for each u,g,o if read or write permitted
+				msk = (test, setflag) -> openMode | ( if openMode & test then setflag else 0 )
+				dirMode = msk(0o006, 0o001) | msk(0o060, 0o010) | msk(0o600, 0o100)
+			else
+				openMode = @_maskMode 0o644
+				dirMode  = @_maskMode 0o755
+			
+			[openMode, dirMode]
+		
 		
 		process.on 'exit', @closeAllOpenFiles
 		
@@ -38,15 +51,22 @@ module.exports = do ->
 			
 			@filename    = config.getOption(KEYS_FILENAME...) or 'logging.log'
 			basedir      = config.getOption(KEYS_BASEDIR...) or '.'
-			openMode     = config.getOption('mode') ? 0o644
 			@throwErrors = config.getOption('throwErrors') ? no
 			
-			{key, value} = config.getOptionWithKey('flags', 'overwrite', 'append') ? { key: 'append', value: yes }
-			openFlags    = if key is 'flags' then value else if (key is 'overwrite' and value) or (key is 'append' and not value) then 'w' else 'a'
-			
 			filepath = path.resolve basedir, @filename
+			@fd = cache[filepath]
 			
-			@fd = cache[filepath] ?= fs.openSync filepath, openFlags, openMode
+			unless @fd?
+				{key, value} = config.getOptionWithKey('flags', 'overwrite', 'append') ? { key: 'append', value: yes }
+				openFlags    = if key is 'flags' then value else if (key is 'overwrite' and value) or (key is 'append' and not value) then 'w' else 'a'
+				
+				[openMode, dirMode] = FileLogger._getModes config.getOption 'mode'
+				
+				filedir  = path.dirname filepath
+				
+				require('mkdirp').sync filedir, dirMode unless fs.existsSync filedir
+				
+				@fd = cache[filepath] = fs.openSync filepath, openFlags, openMode
 		
 		
 		log: (line) ->
