@@ -105,7 +105,7 @@ Example `logconf.json` configuration:
 	
 	basedir: "/var/log/mylogs"                // Will be used by all FileLoggers
 	
-	// Level config for all loggers
+	// Level config for all loggers without specific configuration
 	levels: {
 		"": "INFO",
 		"org.foo": "WARN",
@@ -117,6 +117,7 @@ Example `logconf.json` configuration:
 
 The logging configuration consists of a global configuration (i.e. all items in the root object) and separate configurations for each output logger to create (i.e. each item in the `loggers` array).
 Options are taken from the specific logger config if available, else from the global config or otherwise using the default values.
+This means that configuration is merged, where logger-specific options override global options.
 
 **Note** that level configuration is not merged but replaced!
 
@@ -124,7 +125,7 @@ Options are taken from the specific logger config if available, else from the gl
 ### Log level configuration
 The basic format for level configuration is an object for key `levels`, listing the packages with the minimum log level name.
 
-Instead of the minimum level name, an array with the specific level names can be used, like `"my.app.foo": [ "DEBUG", "WARN" ]`
+Instead of the minimum level name, an array with the specific level names can be used, like `"my.app.foo": [ "DEBUG", "WARN" ]` which will only log exactly DEBUG and WARN messages.
 
 #### Log level names
 Listing of all log level names in ascending order of importance:
@@ -138,8 +139,8 @@ Listing of all log level names in ascending order of importance:
 | ERROR | Errors occurred in a system functionality |
 | FATAL | Fatal errors occurred and the system is incapable of functioning |
 
-There are two **special log levels**:
-- `ALL` can be used to include all of the levels above
+These **special log levels** can be used in the level configuration:
+- `ALL` will include all of the levels above
 - `OFF` is suppressing logging for a package
 
 
@@ -154,27 +155,30 @@ When creating a new Log instance like `var log = new Log("my.app.Module")` then 
 
 
 ### Output logger options
-| Logger | Option | Default value |
-| ------ | ------ | ------------- |
-| *General options* | levels | *see [above](#log-level-names)* |
-|                   | formatPattern | *see [below](#log-message-format)* |
-|                   | minLevel | INFO |
-|                   | maxLevel | FATAL |
-| ConsoleLogger | type | ConsoleLogger |
-| FileLogger    | type | FileLogger *(required)* |
-|               | filename | logging.log |
-|               | basedir | . *(current directory)* |
-|               | overwrite | false |
-|               | mode | 0644 *(rw-r--r--)* |
-|               | throwErrors | false |
+| Logger | Option | Description | Default value |
+| ------ | ------ | ----------- | ------------- |
+| *General options* | levels | Level configuration | *see [above](#log-level-names)* |
+|                   | formatPattern | Log output format | *see [below](#log-message-format)* |
+|                   | minLevel | Disable lower log levels | TRACE |
+|                   | maxLevel | Disable higher log levels | FATAL |
+| ConsoleLogger | type |  | ConsoleLogger |
+| FileLogger    | type |  | FileLogger *(required)* |
+|               | filename | Log file name | logging.log |
+|               | basedir | Log directory | . *(current directory)* |
+|               | overwrite | `true` to replace file | false |
+|               | mode | File creation mode | 0644 *(numeric!, means: rw-r--r--)* |
+|               | throwErrors | `true` to throw errors | false |
 
 
 The **ConsoleLogger** is the default ouput logger and make use of the [Console API](https://getfirebug.com/wiki/index.php/Console_API) which usually is available for common environments.
 It will log the messages to the `console` object supporting its methods for different log levels.
 
 For creating log files, the **FileLogger** can be used. It saves the log messages line-wise in a file.
-By default, any IO-errors are silently ignored when logging, **NOT** when creating the FileLogger.
+By default, any IO-errors are silently ignored when logging (but **NOT** ignored when creating the FileLogger).
 Use `throwErrors: true` to also throw errors when logging, but be aware that this could interfere with your code.
+This framework will create the directories for the log file if necessary. The directory creation mode is derived from the file creation mode.
+
+The `minLevel` (`maxLevel`) will filter all log messages with lower (higher) level and override any level configuration.
 
 
 ### Log message format
@@ -199,13 +203,13 @@ The pattern can contain **format variables** which are replaced by the appropria
 | %s | seconds | 29 |
 | %S | milliseconds | 015 |
 | %T | timestamp | 1090685009015 |
-| %% | % literal | % |
+| %% | literal % | % |
 
-Note that several variables can take an optional **padding number** like `%1M` which would result in `7`.
-
-The log instance name will treat a number as the count of name parts. `%1n` would result in `package.Module` and `%0n` would result in `Module`.
+Note that several variables can take an optional (zero) **padding number** like `%1M` which would result in `7` and `%4D` would result in `0024`.
 
 The log level name treats a number as right-side space padding count. By default all names are padded to be of equal length.
+
+The log instance name will treat a number as the count of name parts. `%1n` would result in `package.Module` and `%0n` would result in `Module`.
 
 
 ## Logging
@@ -227,7 +231,7 @@ log.info("User {} accessing login.", username);
 // In output produces something like:
 // 2004-07-24 18:03:29.015 INFO   app.security.LoginController: User John accessing login.
 
-if (log.isDebug()) {  // False in default configuration, since minimum level is INFO
+if (log.isDebug()) {  // False in default configuration, since default minimum level is INFO
     log.debug("User data: {}", JSON.stringify(userDAO.getFullUserData(username)));
 }
 // alternatively:
