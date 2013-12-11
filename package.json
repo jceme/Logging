@@ -1,6 +1,6 @@
 {
   "name": "Logging",
-  "version": "1.1.0",
+  "version": "2.0.0",
   "description": "Logging facility based on SLF4J in Java",
   "main": "js/Log.js",
   "directories": {
@@ -8,16 +8,20 @@
     "test": "test"
   },
   "dependencies": {
-    "RelaxedJsonParser": "git://github.com/jceme/RelaxedJsonParser.git#1.0.0"
+    "RelaxedJsonParser": "git://github.com/jceme/RelaxedJsonParser.git#1.1.0",
+    "mkdirp": "0.3.x"
   },
   "devDependencies": {
-    "coffee-script": "1.3.x",
-    "mocha": "1.6.x",
-    "should": "1.2.x"
+    "coffee-script": "1.6.x",
+    "istanbul": "0.1.x",
+    "mocha": "1.14.x",
+    "should": "2.1.x",
+    "mockery": "1.4.x",
+    "nodemock": "0.2.x"
   },
   "scripts": {
-    "pretest": "./node_modules/.bin/coffee -c -o js src/",
-    "test": "./node_modules/.bin/mocha -u tdd -R spec js/test/Log.test"
+    "pretest": "rm -rf js; ./node_modules/.bin/coffee -c -o js src/ && ./node_modules/.bin/coffee -c -o js/test test/",
+    "test": "./node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- -u tdd -R spec js/test/*Test.js js/test/**/*Test.js"
   },
   "repository": {
     "type": "git",
